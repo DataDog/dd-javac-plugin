@@ -1,0 +1,76 @@
+stages:
+  - deploy_to_sonatype
+  - create_key
+
+variables:
+  REGISTRY: 486234852809.dkr.ecr.us-east-1.amazonaws.com
+
+# From the tagged repo, push the release artifact
+deploy_to_sonatype:
+  stage: deploy_to_sonatype
+
+  rules:
+    # All releases are manual
+    - when: manual
+      allow_failure: true
+
+  tags:
+    - "runner:docker"
+
+  image: openjdk:8
+
+  script:
+    # Ensure we don't print commands being run to the logs during credential
+    # operations
+    - set +x
+
+    - echo "Installing AWSCLI..."
+    - apt update
+    - apt install -y python3 python3-pip
+    - python3 -m pip install awscli
+
+    - echo "Fetching Sonatype user..."
+    - export SONATYPE_USER=$(aws ssm get-parameter --region us-east-1 --name ci.dd-javac-plugin.publishing.sonatype_username --with-decryption --query "Parameter.Value" --out text)
+    - echo "Fetching Sonatype password..."
+    - export SONATYPE_PASS=$(aws ssm get-parameter --region us-east-1 --name ci.dd-javac-plugin.publishing.sonatype_password --with-decryption --query "Parameter.Value" --out text)
+
+    - echo "Fetching GPG private key..."
+    - export GPG_PRIVATE_KEY=$(aws ssm get-parameter --region us-east-1 --name ci.dd-javac-plugin.signing.gpg_private_key --with-decryption --query "Parameter.Value" --out text)
+    - echo "Fetching GPG password..."
+    - export GPG_PASSWORD=$(aws ssm get-parameter --region us-east-1 --name ci.dd-javac-plugin.signing.gpg_passphrase --with-decryption --query "Parameter.Value" --out text)
+
+    - set -x
+
+    - echo "Building release..."
+    - ./gradlew build publishToSonatype closeSonatypeStagingRepository --max-workers=1 --build-cache --stacktrace --no-daemon
+    # TODO ensure both the plugin and the client are published
+
+  artifacts:
+    expire_in: 12 mos
+    paths:
+      # TODO update these
+      - okhttp/target/*.jar
+      - okhttp/target/*.pom
+      - okhttp/target/*.asc
+      - okhttp/target/*.md5
+      - okhttp/target/*.sha1
+      - okhttp/target/*.sha256
+      - okhttp/target/*.sha512
+
+# This job creates the GPG key used to sign the releases
+create_key:
+  stage: create_key
+  when: manual
+  needs: [ ]
+  tags: [ "runner:docker", "size:large" ]
+  variables:
+    PROJECT_NAME: "dd-javac-plugin"
+    EXPORT_TO_KEYSERVER: "false"
+  image: $REGISTRY/ci/agent-key-management-tools/gpg:1
+  script:
+    - mkdir pubkeys
+    - /create.sh
+  artifacts:
+    expire_in: 13 mos
+    paths:
+      - pubkeys
