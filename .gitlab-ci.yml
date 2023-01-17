@@ -43,19 +43,15 @@ deploy_to_sonatype:
 
     - echo "Building release..."
     - ./gradlew build publishToSonatype closeSonatypeStagingRepository --max-workers=1 --build-cache --stacktrace --no-daemon
-    # TODO ensure both the plugin and the client are published
 
   artifacts:
     expire_in: 12 mos
     paths:
-      # TODO update these
-      - okhttp/target/*.jar
-      - okhttp/target/*.pom
-      - okhttp/target/*.asc
-      - okhttp/target/*.md5
-      - okhttp/target/*.sha1
-      - okhttp/target/*.sha256
-      - okhttp/target/*.sha512
+      - build/libs/*.jar
+      - build/libs/*.asc
+      - build/publications/maven/*.json
+      - build/publications/maven/*.xml
+      - build/publications/maven/*.asc
 
 # This job creates the GPG key used to sign the releases
 create_key:
@@ -65,7 +61,7 @@ create_key:
   tags: [ "runner:docker", "size:large" ]
   variables:
     PROJECT_NAME: "dd-javac-plugin"
-    EXPORT_TO_KEYSERVER: "false"
+    EXPORT_TO_KEYSERVER: "true"
   image: $REGISTRY/ci/agent-key-management-tools/gpg:1
   script:
     - mkdir pubkeys

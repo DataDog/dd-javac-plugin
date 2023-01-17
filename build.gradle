@@ -1,19 +1,24 @@
 import org.gradle.internal.jvm.Jvm
 
 plugins {
-    id 'java-library'
-    id 'maven-publish'
-    id 'signing'
-    id 'io.github.gradle-nexus.publish-plugin' version '1.0.0'
+    id "io.github.gradle-nexus.publish-plugin" version "1.0.0"
 }
 
 allprojects {
-    group 'com.datadoghq'
-    version '1.0-SNAPSHOT'
+    group "com.datadoghq"
+    version "1.0-SNAPSHOT"
+
+    apply plugin: "java-library"
+    apply plugin: "maven-publish"
+    apply plugin: "signing"
 
     java {
         withJavadocJar()
         withSourcesJar()
+    }
+
+    test {
+        useJUnitPlatform()
     }
 
     repositories {
@@ -21,48 +26,57 @@ allprojects {
         mavenCentral()
         gradlePluginPortal()
     }
-}
 
-description = 'Datadog Java Compiler Plugin'
-
-dependencies {
-    implementation project(':dd-javac-plugin-client')
-    implementation files(Jvm.current().toolsJar)
-
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-}
-
-test {
-    useJUnitPlatform()
-}
-
-tasks.withType(GenerateMavenPom).configureEach {
-    doFirst {
-        MavenPom pom = it.pom
-        pom.name = project.name
-        pom.description = project.description
-        pom.packaging = "jar"
-        pom.url = "https://github.com/datadog/dd-javac-plugin"
-        pom.licenses {
-            license {
-                name = "The Apache Software License, Version 2.0"
-                url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
-                distribution = "repo"
-            }
-        }
-        pom.scm {
-            connection = "scm:https://datadog@github.com/datadog/dd-javac-plugin"
-            developerConnection = "scm:git@github.com:datadog/dd-javac-plugin.git"
-            url = "https://github.com/datadog/dd-javac-plugin"
-        }
-        pom.developers {
-            developer {
-                id = "datadog"
-                name = "Datadog"
+    publishing {
+        publications {
+            maven(MavenPublication) { MavenPublication publication ->
+                publication.from components.java
             }
         }
     }
+
+    signing {
+        useInMemoryPgpKeys(System.getenv("GPG_PRIVATE_KEY"), System.getenv("GPG_PASSWORD"))
+        sign publishing.publications.maven
+    }
+
+    tasks.withType(GenerateMavenPom).configureEach {
+        doFirst {
+            MavenPom pom = it.pom
+            pom.name = project.name
+            pom.description = project.description
+            pom.packaging = "jar"
+            pom.url = "https://github.com/datadog/dd-javac-plugin"
+            pom.licenses {
+                license {
+                    name = "The Apache Software License, Version 2.0"
+                    url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    distribution = "repo"
+                }
+            }
+            pom.scm {
+                connection = "scm:https://datadog@github.com/datadog/dd-javac-plugin"
+                developerConnection = "scm:git@github.com:datadog/dd-javac-plugin.git"
+                url = "https://github.com/datadog/dd-javac-plugin"
+            }
+            pom.developers {
+                developer {
+                    id = "datadog"
+                    name = "Datadog"
+                }
+            }
+        }
+    }
+}
+
+description = "Datadog Java Compiler Plugin"
+
+dependencies {
+    implementation project(":dd-javac-plugin-client")
+    implementation files(Jvm.current().toolsJar)
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.1"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.1"
 }
 
 gradle.taskGraph.whenReady { TaskExecutionGraph taskGraph ->
@@ -75,42 +89,26 @@ gradle.taskGraph.whenReady { TaskExecutionGraph taskGraph ->
     }
 }
 
-publishing {
-    publications {
-        maven(MavenPublication) { MavenPublication publication ->
-            publication.from components.java
-        }
-    }
-}
-
-signing {
-    useInMemoryPgpKeys(System.getenv("GPG_PRIVATE_KEY"), System.getenv("GPG_PASSWORD"))
-    sign publishing.publications.maven
-}
-
 nexusPublishing {
     repositories {
-        if (project.hasProperty('forceLocal')) {
+        if (project.hasProperty("forceLocal")) {
             local {
                 // For testing use with https://hub.docker.com/r/sonatype/nexus
                 // docker run --rm -d -p 8081:8081 --name nexus sonatype/nexus
-                // Doesn't work for testing releases though... (due to staging)
+                // Doesn't work for testing releases due to staging
                 nexusUrl = uri("http://localhost:8081/nexus/content/repositories/releases/")
                 snapshotRepositoryUrl = uri("http://localhost:8081/nexus/content/repositories/snapshots/")
 
                 username = "admin"
                 password = "admin123"
+
+                allowInsecureProtocol = true
             }
         } else {
             sonatype {
-                //only for users registered in Sonatype after 24 Feb 2021 // TODO is this needed?
-                nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-                snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-
                 username = System.getenv("SONATYPE_USERNAME")
                 password = System.getenv("SONATYPE_PASSWORD")
             }
         }
     }
 }
-
