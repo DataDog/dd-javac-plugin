@@ -2,11 +2,12 @@ import org.gradle.internal.jvm.Jvm
 
 plugins {
     id "io.github.gradle-nexus.publish-plugin" version "1.0.0"
+    id 'net.researchgate.release' version '3.0.2'
 }
 
 allprojects {
     group "com.datadoghq"
-    version "1.0-SNAPSHOT"
+    version "$version"
 
     apply plugin: "java-library"
     apply plugin: "maven-publish"
@@ -110,5 +111,11 @@ nexusPublishing {
                 password = System.getenv("SONATYPE_PASSWORD")
             }
         }
+    }
+}
+
+release {
+    git {
+        requireBranch.set('master')
     }
 }
