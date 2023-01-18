@@ -12,7 +12,7 @@ List of things that the plugin does:
 
 The following conditions need to be satisfied in order for the plugin to work:
 
-- the plugin JAR needs to be added to the compiler's annotation processor path
+- the plugin and plugin-client JARs need to be added to the compiler's classpath
 - `-Xplugin:DatadogCompilerPlugin` argument needs to be provided to the compiler
 - for JDK 16 and newer versions, additional `--add-exports` flags are required due
   to [JEP 396: Strongly Encapsulate JDK Internals by Default](https://openjdk.org/jeps/396) (see below sections for more
@@ -30,6 +30,14 @@ Below is an example of how to specify annotation processor path and compiler arg
 
 ```xml
 
+<dependencies>
+    <dependency>
+        <groupId>com.datadoghq</groupId>
+        <artifactId>dd-javac-plugin-client</artifactId>
+        <version>1.0.0</version>
+    </dependency>
+</dependencies>
+<build>
 <plugins>
     <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -48,7 +56,8 @@ Below is an example of how to specify annotation processor path and compiler arg
             </testCompilerArgument>
         </configuration>
     </plugin>
-    <plugins>
+</plugins>
+</build>
 ```
 
 > Maven compiler plugin supports
@@ -95,12 +104,13 @@ org.gradle.jvmargs=\
 
 ### Other
 
-If you're using any other build system, just make sure to set the annotation processor path and the compiler arguments.
+If you're using any other build system, just make sure to add the plugin and client JARs to the compiler's classpath,
+and pass the plugin argument.
 Below is an example for direct compiler invocation:
 
 ```shell
 javac \
-    -processorpath <PATH>/dd-javac-plugin-1.0.0.jar \
+    -classpath dd-javac-plugin-client-1.0.0.jar:dd-javac-plugin-1.0.0.jar \
     -Xplugin:DatadogCompilerPlugin \
     <PATH_TO_SOURCES>
 ```
@@ -108,12 +118,12 @@ javac \
 If you are using JDK 16 or newer, additional `--add-exports` flags should be provided:
 
 ```shell
-$JAVA_17_HOME/bin/javac \
+javac \
   -J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED  \
   -J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED \
   -J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
   -J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED \
-  -processorpath <PATH>/dd-javac-plugin-1.0.0.jar \
+  -classpath dd-javac-plugin-client-1.0.0.jar:dd-javac-plugin-1.0.0.jar \
   -Xplugin:DatadogCompilerPlugin \
   <PATH_TO_SOURCES>
 ```
