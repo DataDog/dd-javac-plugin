@@ -12,7 +12,8 @@ List of things that the plugin does:
 
 The following conditions need to be satisfied in order for the plugin to work:
 
-- the plugin and plugin-client JARs need to be added to the compiler's classpath
+- the plugin JAR needs to be added to the compiler's annotation processor path
+- the plugin-client JAR needs to be added to the project's classpath
 - `-Xplugin:DatadogCompilerPlugin` argument needs to be provided to the compiler
 - for JDK 16 and newer versions, additional `--add-exports` flags are required due
   to [JEP 396: Strongly Encapsulate JDK Internals by Default](https://openjdk.org/jeps/396) (see below sections for more
@@ -26,7 +27,7 @@ output
 
 ### Maven
 
-Below is an example of how to specify annotation processor path and compiler arguments for maven compiler plugin.
+Add plugin-client JAR to the project's classpath:
 
 ```xml
 
@@ -37,26 +38,32 @@ Below is an example of how to specify annotation processor path and compiler arg
         <version>1.0.0</version>
     </dependency>
 </dependencies>
+```
+
+Add plugin JAR to the compiler's annotation processor path and pass the plugin argument:
+
+```xml 
+
 <build>
-<plugins>
-    <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.5</version>
-        <configuration>
-            <annotationProcessorPaths>
-                <annotationProcessorPath>
-                    <groupId>com.datadoghq</groupId>
-                    <artifactId>dd-javac-plugin</artifactId>
-                    <version>1.0.0</version>
-                </annotationProcessorPath>
-            </annotationProcessorPaths>
-            <testCompilerArgument>
-                -Xplugin:DatadogCompilerPlugin
-            </testCompilerArgument>
-        </configuration>
-    </plugin>
-</plugins>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.5</version>
+            <configuration>
+                <annotationProcessorPaths>
+                    <annotationProcessorPath>
+                        <groupId>com.datadoghq</groupId>
+                        <artifactId>dd-javac-plugin</artifactId>
+                        <version>1.0.0</version>
+                    </annotationProcessorPath>
+                </annotationProcessorPaths>
+                <testCompilerArgument>
+                    -Xplugin:DatadogCompilerPlugin
+                </testCompilerArgument>
+            </configuration>
+        </plugin>
+    </plugins>
 </build>
 ```
 
@@ -77,7 +84,8 @@ to [.mvn/jvm.config](https://maven.apache.org/configure.html#mvn-jvm-config-file
 
 ### Gradle
 
-Below is an example of how to configure the plugin for compiling test classes:
+Add plugin-client JAR to the project's classpath, add plugin JAR to the compiler's annotation processor path and pass
+the plugin argument:
 
 ```groovy
 dependencies {
