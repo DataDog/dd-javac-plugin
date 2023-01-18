@@ -7,15 +7,11 @@ import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.api.BasicJavacTask;
-import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Log;
-import com.sun.tools.javac.util.Name;
-import com.sun.tools.javac.util.Names;
 import datadog.compiler.annotations.SourcePath;
 import java.io.PrintWriter;
 import java.net.URI;
@@ -38,22 +34,10 @@ public class DatadogCompilerPlugin implements Plugin {
             BasicJavacTask basicJavacTask = (BasicJavacTask) task;
             Context context = basicJavacTask.getContext();
 
-            JCTree.JCExpression annotationType = readAnnotationType(context);
+            JCTree.JCExpression annotationType = TypeLoader.loadType(context, SourcePath.class);
             task.addTaskListener(new DatadogCompilerPluginTaskListener(context, annotationType));
             Log.instance(context).printRawLines(Log.WriterKind.NOTICE, NAME + " initialized");
         }
-    }
-
-    private static JCTree.JCExpression readAnnotationType(Context context) {
-        Names names = Names.instance(context);
-        Class<SourcePath> annotationClass = SourcePath.class;
-        Name annotationClassName = names.fromString(annotationClass.getName());
-
-        ClassReader classReader = ClassReader.instance(context);
-        Symbol.ClassSymbol annotationSymbol = classReader.enterClass(annotationClassName);
-
-        TreeMaker maker = TreeMaker.instance(context);
-        return maker.Type(annotationSymbol.type);
     }
 
     private static final class DatadogCompilerPluginTaskListener implements TaskListener {
@@ -116,4 +100,5 @@ public class DatadogCompilerPlugin implements Plugin {
             return super.visitClass(node, aVoid);
         }
     }
+
 }

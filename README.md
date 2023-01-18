@@ -40,7 +40,7 @@ Below is an example of how to specify annotation processor path and compiler arg
                 <annotationProcessorPath>
                     <groupId>com.datadoghq</groupId>
                     <artifactId>dd-javac-plugin</artifactId>
-                    <version>1.0</version>
+                    <version>1.0.0</version>
                 </annotationProcessorPath>
             </annotationProcessorPaths>
             <testCompilerArgument>
@@ -62,7 +62,6 @@ to [.mvn/jvm.config](https://maven.apache.org/configure.html#mvn-jvm-config-file
 ```
 --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
 --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED
---add-exports=jdk.compiler/com.sun.tools.javac.jvm=ALL-UNNAMED
 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED
 --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
 ```
@@ -73,7 +72,8 @@ Below is an example of how to configure the plugin for compiling test classes:
 
 ```groovy
 dependencies {
-    testAnnotationProcessor 'com.datadoghq:dd-javac-plugin:1.0'
+    implementation 'com.datadoghq:dd-javac-plugin-client:1.0.0'
+    testAnnotationProcessor 'com.datadoghq:dd-javac-plugin:1.0.0'
 }
 
 compileTestJava {
@@ -89,7 +89,6 @@ file:
 org.gradle.jvmargs=\
 --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED  \
 --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED \
---add-exports=jdk.compiler/com.sun.tools.javac.jvm=ALL-UNNAMED  \
 --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
 --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
 ```
@@ -101,7 +100,7 @@ Below is an example for direct compiler invocation:
 
 ```shell
 javac \
-    -processorpath <PATH>/dd-javac-plugin-1.0.jar \
+    -processorpath <PATH>/dd-javac-plugin-1.0.0.jar \
     -Xplugin:DatadogCompilerPlugin \
     <PATH_TO_SOURCES>
 ```
@@ -112,10 +111,9 @@ If you are using JDK 16 or newer, additional `--add-exports` flags should be pro
 $JAVA_17_HOME/bin/javac \
   -J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED  \
   -J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED \
-  -J--add-exports=jdk.compiler/com.sun.tools.javac.jvm=ALL-UNNAMED  \
   -J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
   -J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED \
-  -processorpath <PATH>/dd-javac-plugin-1.0.jar \
+  -processorpath <PATH>/dd-javac-plugin-1.0.0.jar \
   -Xplugin:DatadogCompilerPlugin \
   <PATH_TO_SOURCES>
 ```

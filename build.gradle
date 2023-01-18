@@ -2,7 +2,7 @@ import org.gradle.internal.jvm.Jvm
 
 plugins {
     id "io.github.gradle-nexus.publish-plugin" version "1.0.0"
-    id 'net.researchgate.release' version '3.0.2'
+    id "net.researchgate.release" version "3.0.2"
 }
 
 allprojects {
@@ -72,50 +72,18 @@ allprojects {
 
 description = "Datadog Java Compiler Plugin"
 
+def launcher8 = javaToolchains.launcherFor { languageVersion.set(JavaLanguageVersion.of(8)) }
+def javaHome8 = launcher8.map { it.metadata.installationPath.asFile }
+def jvm8 = Jvm.forHome(javaHome8.get())
+
 dependencies {
     implementation project(":dd-javac-plugin-client")
-    implementation files(Jvm.current().toolsJar)
+    implementation files(jvm8.toolsJar)
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.1"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.1"
 }
 
-gradle.taskGraph.whenReady { TaskExecutionGraph taskGraph ->
-    if (taskGraph.hasTask("publishToSonatype")) {
-        assert System.getenv("SONATYPE_USERNAME") != null
-        assert System.getenv("SONATYPE_PASSWORD") != null
-
-        assert System.getenv("GPG_PRIVATE_KEY") != null
-        assert System.getenv("GPG_PASSWORD") != null
-    }
-}
-
-nexusPublishing {
-    repositories {
-        if (project.hasProperty("forceLocal")) {
-            local {
-                // For testing use with https://hub.docker.com/r/sonatype/nexus
-                // docker run --rm -d -p 8081:8081 --name nexus sonatype/nexus
-                // Doesn't work for testing releases due to staging
-                nexusUrl = uri("http://localhost:8081/nexus/content/repositories/releases/")
-                snapshotRepositoryUrl = uri("http://localhost:8081/nexus/content/repositories/snapshots/")
-
-                username = "admin"
-                password = "admin123"
-
-                allowInsecureProtocol = true
-            }
-        } else {
-            sonatype {
-                username = System.getenv("SONATYPE_USERNAME")
-                password = System.getenv("SONATYPE_PASSWORD")
-            }
-        }
-    }
-}
-
-release {
-    git {
-        requireBranch.set('master')
-    }
-}
+apply from: "$rootDir/gradle/java8-compile.gradle"
+apply from: "$rootDir/gradle/multi-release.gradle"
+apply from: "$rootDir/gradle/publishing.gradle"
