@@ -7,6 +7,9 @@ sourceSets {
 }
 
 compileJava9Java {
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(9)
+    }
     options.compilerArgs.addAll(rootProject.file('gradle/java9-compile.options').readLines())
 }
 

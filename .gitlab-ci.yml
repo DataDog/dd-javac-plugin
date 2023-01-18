@@ -17,7 +17,7 @@ deploy_to_sonatype:
   tags:
     - "runner:docker"
 
-  image: openjdk:9
+  image: openjdk:8
 
   script:
     # Ensure we don't print commands being run to the logs during credential
