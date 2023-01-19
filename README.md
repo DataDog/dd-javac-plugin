@@ -22,9 +22,6 @@ The following conditions need to be satisfied in order for the plugin to work:
 If the configuration is successful, you should see the line `DatadogCompilerPlugin initialized` in your compiler's
 output
 
-> For now the augmentation is only useful in test classes, so you can limit configuration to javac invocations that
-> compile test sources.
-
 ### Maven
 
 Add plugin-client JAR to the project's classpath:
@@ -35,7 +32,7 @@ Add plugin-client JAR to the project's classpath:
     <dependency>
         <groupId>com.datadoghq</groupId>
         <artifactId>dd-javac-plugin-client</artifactId>
-        <version>1.0.0</version>
+        <version>0.1.0</version>
     </dependency>
 </dependencies>
 ```
@@ -55,12 +52,12 @@ Add plugin JAR to the compiler's annotation processor path and pass the plugin a
                     <annotationProcessorPath>
                         <groupId>com.datadoghq</groupId>
                         <artifactId>dd-javac-plugin</artifactId>
-                        <version>1.0.0</version>
+                        <version>0.1.0</version>
                     </annotationProcessorPath>
                 </annotationProcessorPaths>
-                <testCompilerArgument>
-                    -Xplugin:DatadogCompilerPlugin
-                </testCompilerArgument>
+                <compilerArgs>
+                    <arg>-Xplugin:DatadogCompilerPlugin</arg>
+                </compilerArgs>
             </configuration>
         </plugin>
     </plugins>
@@ -89,12 +86,13 @@ the plugin argument:
 
 ```groovy
 dependencies {
-    implementation 'com.datadoghq:dd-javac-plugin-client:1.0.0'
-    testAnnotationProcessor 'com.datadoghq:dd-javac-plugin:1.0.0'
+    implementation 'com.datadoghq:dd-javac-plugin-client:0.1.0'
+    annotationProcessor 'com.datadoghq:dd-javac-plugin:0.1.0'
+    testAnnotationProcessor 'com.datadoghq:dd-javac-plugin:0.1.0'
 }
 
-compileTestJava {
-    options.compilerArgs << '-Xplugin:DatadogCompilerPlugin'
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add('-Xplugin:DatadogCompilerPlugin')
 }
 ```
 
@@ -118,7 +116,7 @@ Below is an example for direct compiler invocation:
 
 ```shell
 javac \
-    -classpath dd-javac-plugin-client-1.0.0.jar:dd-javac-plugin-1.0.0.jar \
+    -classpath dd-javac-plugin-client-0.1.0.jar:dd-javac-plugin-0.1.0.jar \
     -Xplugin:DatadogCompilerPlugin \
     <PATH_TO_SOURCES>
 ```
@@ -131,7 +129,7 @@ javac \
   -J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED \
   -J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
   -J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED \
-  -classpath dd-javac-plugin-client-1.0.0.jar:dd-javac-plugin-1.0.0.jar \
+  -classpath dd-javac-plugin-client-0.1.0.jar:dd-javac-plugin-0.1.0.jar \
   -Xplugin:DatadogCompilerPlugin \
   <PATH_TO_SOURCES>
 ```
