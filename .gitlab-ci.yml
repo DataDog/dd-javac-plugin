@@ -52,6 +52,11 @@ deploy_to_sonatype:
       - build/publications/maven/*.json
       - build/publications/maven/*.xml
       - build/publications/maven/*.asc
+      - dd-javac-plugin-client/build/libs/*.jar
+      - dd-javac-plugin-client/build/libs/*.asc
+      - dd-javac-plugin-client/build/publications/maven/*.json
+      - dd-javac-plugin-client/build/publications/maven/*.xml
+      - dd-javac-plugin-client/build/publications/maven/*.asc
 
 # This job creates the GPG key used to sign the releases
 create_key:

@@ -6,8 +6,8 @@ release {
 
 gradle.taskGraph.whenReady { TaskExecutionGraph taskGraph ->
     if (taskGraph.hasTask("publishToSonatype")) {
-        assert System.getenv("SONATYPE_USERNAME") != null
-        assert System.getenv("SONATYPE_PASSWORD") != null
+        assert System.getenv("SONATYPE_USER") != null
+        assert System.getenv("SONATYPE_PASS") != null
 
         assert System.getenv("GPG_PRIVATE_KEY") != null
         assert System.getenv("GPG_PASSWORD") != null
@@ -31,8 +31,8 @@ nexusPublishing {
             }
         } else {
             sonatype {
-                username = System.getenv("SONATYPE_USERNAME")
-                password = System.getenv("SONATYPE_PASSWORD")
+                username = System.getenv("SONATYPE_USER")
+                password = System.getenv("SONATYPE_PASS")
             }
         }
     }
