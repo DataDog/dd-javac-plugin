@@ -32,7 +32,7 @@ Add plugin-client JAR to the project's classpath:
     <dependency>
         <groupId>com.datadoghq</groupId>
         <artifactId>dd-javac-plugin-client</artifactId>
-        <version>0.1.0</version>
+        <version>0.1.1</version>
     </dependency>
 </dependencies>
 ```
@@ -52,7 +52,7 @@ Add plugin JAR to the compiler's annotation processor path and pass the plugin a
                     <annotationProcessorPath>
                         <groupId>com.datadoghq</groupId>
                         <artifactId>dd-javac-plugin</artifactId>
-                        <version>0.1.0</version>
+                        <version>0.1.1</version>
                     </annotationProcessorPath>
                 </annotationProcessorPaths>
                 <compilerArgs>
@@ -86,9 +86,9 @@ the plugin argument:
 
 ```groovy
 dependencies {
-    implementation 'com.datadoghq:dd-javac-plugin-client:0.1.0'
-    annotationProcessor 'com.datadoghq:dd-javac-plugin:0.1.0'
-    testAnnotationProcessor 'com.datadoghq:dd-javac-plugin:0.1.0'
+    implementation 'com.datadoghq:dd-javac-plugin-client:0.1.1'
+    annotationProcessor 'com.datadoghq:dd-javac-plugin:0.1.1'
+    testAnnotationProcessor 'com.datadoghq:dd-javac-plugin:0.1.1'
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -116,7 +116,7 @@ Below is an example for direct compiler invocation:
 
 ```shell
 javac \
-    -classpath dd-javac-plugin-client-0.1.0.jar:dd-javac-plugin-0.1.0.jar \
+    -classpath dd-javac-plugin-client-0.1.1.jar:dd-javac-plugin-0.1.1.jar \
     -Xplugin:DatadogCompilerPlugin \
     <PATH_TO_SOURCES>
 ```
@@ -129,7 +129,7 @@ javac \
   -J--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED \
   -J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
   -J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED \
-  -classpath dd-javac-plugin-client-0.1.0.jar:dd-javac-plugin-0.1.0.jar \
+  -classpath dd-javac-plugin-client-0.1.1.jar:dd-javac-plugin-0.1.1.jar \
   -Xplugin:DatadogCompilerPlugin \
   <PATH_TO_SOURCES>
 ```
