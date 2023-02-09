@@ -141,3 +141,22 @@ javac \
   Eclipse JDT compiler support is [pending](https://bugs.eclipse.org/bugs/show_bug.cgi?id=574899).
 
 - The plugin requires `javac` that comes with java 1.8 or above.
+
+### Using the plugin with Lombok
+Additional steps need to be taken if the compiled code uses [Lombok](https://projectlombok.org/) annotations. 
+Lombok Jar needs to be registered as an annotation processor, alongside the compiler plugin.
+
+When using Maven:
+```xml
+<annotationProcessorPath>
+  <groupId>org.projectlombok</groupId>
+  <artifactId>lombok</artifactId>
+  <version>${lombokVersion}</version>
+</annotationProcessorPath>
+```
+
+When using Gradle: 
+```groovy
+  annotationProcessor 'org.projectlombok:lombok:${lombokVersion}'
+  testAnnotationProcessor 'org.projectlombok:lombok:${lombokVersion}'
+```
