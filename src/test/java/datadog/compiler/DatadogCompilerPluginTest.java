@@ -38,6 +38,22 @@ public class DatadogCompilerPluginTest {
     }
 
     @Test
+    public void testAnonymousClassSourcePathInjection() throws Exception {
+        String testClassName = "datadog.compiler.Test";
+        String testClassSource =
+                "package datadog.compiler; public class Test { " +
+                        "    public static void main() { " +
+                        "        Runnable r = new Runnable() { public void run() {} }; " +
+                        "    } " +
+                        "}";
+        try (InMemoryFileManager fileManager = compile(testClassName, testClassSource)) {
+            Class<?> anonymousClazz = fileManager.loadCompiledClass(testClassName + "$1");
+            String sourcePath = CompilerUtils.getSourcePath(anonymousClazz);
+            Assertions.assertEquals(InMemorySourceFile.sourcePath(testClassName), sourcePath);
+        }
+    }
+
+    @Test
     public void testSourcePathInjectionPreservesAnnotations() throws Exception {
         String testClassName = "datadog.compiler.Test";
         String testClassSource = "package datadog.compiler; @Deprecated public class Test {}";
