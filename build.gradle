@@ -77,8 +77,10 @@ def javaHome8 = launcher8.map { it.metadata.installationPath.asFile }
 def jvm8 = Jvm.forHome(javaHome8.get())
 
 dependencies {
-    implementation project(":dd-javac-plugin-client")
     implementation files(jvm8.toolsJar)
+
+    api project(":dd-javac-plugin-client")
+    api "org.burningwave:core:12.62.7"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.1"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.1"

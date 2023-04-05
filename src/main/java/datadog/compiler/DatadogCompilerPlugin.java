@@ -18,8 +18,21 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import javax.tools.JavaFileObject;
+import org.burningwave.core.assembler.StaticComponentContainer;
+import org.burningwave.core.function.Executor;
+import org.burningwave.core.function.ThrowingRunnable;
 
 public class DatadogCompilerPlugin implements Plugin {
+
+    static {
+        // to free users from having to declare --add-exports: https://openjdk.org/jeps/396
+        if (StaticComponentContainer.JVMInfo.getVersion() >= 16) {
+            StaticComponentContainer.Modules.exportToAllUnnamed("jdk.compiler");
+        }
+        // force classes to be loaded: https://github.com/burningwave/core/discussions/15
+        ThrowingRunnable.class.getClassLoader();
+        Executor.class.getClassLoader();
+    }
 
     static final String NAME = "DatadogCompilerPlugin";
 
