@@ -12,6 +12,21 @@ public class CompilerUtils {
      */
     public static String getSourcePath(Class<?> clazz) {
         SourcePath sourcePathAnnotation = clazz.getAnnotation(SourcePath.class);
-        return sourcePathAnnotation != null ? sourcePathAnnotation.value() : null;
+        if (sourcePathAnnotation != null) {
+            return sourcePathAnnotation.value();
+        }
+
+        if (clazz.isAnonymousClass()) {
+            try {
+                Class<?> enclosingClass = clazz.getEnclosingClass();
+                if (enclosingClass != null) {
+                    return getSourcePath(enclosingClass);
+                }
+            } catch (Exception e) {
+                // ignored
+            }
+        }
+
+        return null;
     }
 }

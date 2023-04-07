@@ -1,9 +1,11 @@
 package datadog.compiler;
 
 import static java.util.Collections.singletonList;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import datadog.compiler.utils.CompilerUtils;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import javax.tools.JavaCompiler;
@@ -67,6 +69,26 @@ public class DatadogCompilerPluginTest {
             // existing annotation was preserved
             Assertions.assertNotNull(clazz.getAnnotation(Deprecated.class),
                     "existing annotation was not preserved");
+        }
+    }
+
+    @Test
+    public void testAnonymousClassCapturedFieldReference() {
+        String testClassName = "datadog.compiler.Test";
+        String testClassSource =
+                "package datadog.compiler; public class Test { " +
+                        "    public static void main() { " +
+                        "        Object o = new Object(); " +
+                        "        Runnable r = new Runnable() { public void run() { System.out.println(o); } }; " +
+                        "        r.run();" +
+                        "    } " +
+                        "}";
+        try (InMemoryFileManager fileManager = compile(testClassName, testClassSource)) {
+            Class<?> testClass = fileManager.loadCompiledClass(testClassName);
+            Method main = testClass.getMethod("main");
+            main.invoke(testClass);
+        } catch (Throwable t) {
+            fail("Compilation interferes with captured fields usage", t);
         }
     }
 

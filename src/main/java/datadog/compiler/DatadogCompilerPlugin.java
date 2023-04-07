@@ -109,7 +109,9 @@ public class DatadogCompilerPlugin implements Plugin {
         @Override
         public Void visitClass(ClassTree node, Void aVoid) {
             JCTree.JCClassDecl classDeclaration = (JCTree.JCClassDecl) node;
-            classDeclaration.mods.annotations = classDeclaration.mods.annotations.prepend(annotation);
+            if (node.getSimpleName().length() > 0) {
+                classDeclaration.mods.annotations = classDeclaration.mods.annotations.prepend(annotation);
+            }
             return super.visitClass(node, aVoid);
         }
     }
