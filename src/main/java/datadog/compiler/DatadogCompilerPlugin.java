@@ -1,6 +1,7 @@
 package datadog.compiler;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.Plugin;
 import com.sun.source.util.TaskEvent;
@@ -17,12 +18,16 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collection;
 import javax.tools.JavaFileObject;
 import org.burningwave.core.assembler.StaticComponentContainer;
 import org.burningwave.core.function.Executor;
 import org.burningwave.core.function.ThrowingRunnable;
 
 public class DatadogCompilerPlugin implements Plugin {
+
+    static final String SKIP_ANNOTATIONS_ARGUMENT = "skipAnnotations";
 
     static {
         // to free users from having to declare --add-exports: https://openjdk.org/jeps/396
@@ -44,11 +49,14 @@ public class DatadogCompilerPlugin implements Plugin {
     @Override
     public void init(JavacTask task, String... strings) {
         if (task instanceof BasicJavacTask) {
+            Collection<String> arguments = Arrays.asList(strings);
+            boolean skipAnnotations = arguments.contains(SKIP_ANNOTATIONS_ARGUMENT);
+
             BasicJavacTask basicJavacTask = (BasicJavacTask) task;
             Context context = basicJavacTask.getContext();
 
             JCTree.JCExpression annotationType = TypeLoader.loadType(context, SourcePath.class);
-            task.addTaskListener(new DatadogCompilerPluginTaskListener(context, annotationType));
+            task.addTaskListener(new DatadogCompilerPluginTaskListener(skipAnnotations, context, annotationType));
             Log.instance(context).printRawLines(Log.WriterKind.NOTICE, NAME + " initialized");
         }
     }
@@ -56,8 +64,10 @@ public class DatadogCompilerPlugin implements Plugin {
     private static final class DatadogCompilerPluginTaskListener implements TaskListener {
         private final Context context;
         private final JCTree.JCExpression annotationType;
+        private final boolean skipAnnotations;
 
-        private DatadogCompilerPluginTaskListener(Context context, JCTree.JCExpression annotationType) {
+        private DatadogCompilerPluginTaskListener(boolean skipAnnotations, Context context, JCTree.JCExpression annotationType) {
+            this.skipAnnotations = skipAnnotations;
             this.context = context;
             this.annotationType = annotationType;
         }
@@ -81,7 +91,7 @@ public class DatadogCompilerPlugin implements Plugin {
                 JCTree.JCLiteral annotationValue = maker.Literal(sourcePath.toString());
                 JCTree.JCAnnotation annotation = maker.Annotation(annotationType, List.of(annotationValue));
 
-                SourcePathInjectingClassVisitor treeVisitor = new SourcePathInjectingClassVisitor(annotation);
+                SourcePathInjectingClassVisitor treeVisitor = new SourcePathInjectingClassVisitor(skipAnnotations, annotation);
                 e.getCompilationUnit().accept(treeVisitor, null);
 
             } catch (Throwable t) {
@@ -100,14 +110,20 @@ public class DatadogCompilerPlugin implements Plugin {
     }
 
     private static final class SourcePathInjectingClassVisitor extends TreeScanner<Void, Void> {
+        private final boolean skipAnnotations;
         private final JCTree.JCAnnotation annotation;
 
-        private SourcePathInjectingClassVisitor(JCTree.JCAnnotation annotation) {
+        private SourcePathInjectingClassVisitor(boolean skipAnnotations, JCTree.JCAnnotation annotation) {
+            this.skipAnnotations = skipAnnotations;
             this.annotation = annotation;
         }
 
         @Override
         public Void visitClass(ClassTree node, Void aVoid) {
+            if (skipAnnotations && node.getKind() == Tree.Kind.ANNOTATION_TYPE) {
+                return super.visitClass(node, aVoid);
+            }
+
             JCTree.JCClassDecl classDeclaration = (JCTree.JCClassDecl) node;
             if (node.getSimpleName().length() > 0) {
                 classDeclaration.mods.annotations = classDeclaration.mods.annotations.prepend(annotation);

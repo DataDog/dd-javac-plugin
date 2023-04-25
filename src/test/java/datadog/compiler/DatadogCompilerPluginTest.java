@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import datadog.compiler.utils.CompilerUtils;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import javax.tools.JavaCompiler;
 import javax.tools.StandardJavaFileManager;
@@ -92,17 +92,59 @@ public class DatadogCompilerPluginTest {
         }
     }
 
-    private InMemoryFileManager compile(String className, String classSource) {
+    @Test
+    public void testAnnotatingAnnotation() throws Exception {
+        String testClassName = "datadog.compiler.Test";
+        String testClassSource =
+                "package datadog.compiler;\n" +
+                        "import java.lang.annotation.ElementType;\n" +
+                        "import java.lang.annotation.Retention;\n" +
+                        "import java.lang.annotation.RetentionPolicy;\n" +
+                        "import java.lang.annotation.Target;\n" +
+                        "@Retention(RetentionPolicy.CLASS)\n" +
+                        "@Target({ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.METHOD, ElementType.TYPE})\n" +
+                        "public @interface Test {\n" +
+                        "    String reason();\n" +
+                        "}";
+        try (InMemoryFileManager fileManager = compile(testClassName, testClassSource)) {
+            Class<?> clazz = fileManager.loadCompiledClass(testClassName);
+            String sourcePath = CompilerUtils.getSourcePath(clazz);
+            Assertions.assertEquals(InMemorySourceFile.sourcePath(testClassName), sourcePath);
+        }
+    }
+
+    @Test
+    public void testSkipAnnotatingAnnotation() throws Exception {
+        String testClassName = "datadog.compiler.Test";
+        String testClassSource =
+                "package datadog.compiler;\n" +
+                        "import java.lang.annotation.ElementType;\n" +
+                        "import java.lang.annotation.Retention;\n" +
+                        "import java.lang.annotation.RetentionPolicy;\n" +
+                        "import java.lang.annotation.Target;\n" +
+                        "@Retention(RetentionPolicy.CLASS)\n" +
+                        "@Target({ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.METHOD, ElementType.TYPE})\n" +
+                        "public @interface Test {\n" +
+                        "    String reason();\n" +
+                        "}";
+        try (InMemoryFileManager fileManager = compile(testClassName, testClassSource, DatadogCompilerPlugin.SKIP_ANNOTATIONS_ARGUMENT)) {
+            Class<?> clazz = fileManager.loadCompiledClass(testClassName);
+            String sourcePath = CompilerUtils.getSourcePath(clazz);
+            Assertions.assertEquals(null, sourcePath);
+        }
+    }
+
+    private InMemoryFileManager compile(String className, String classSource, String... args) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager standardFileManager = compiler.getStandardFileManager(null, null, null);
         InMemoryFileManager fileManager = new InMemoryFileManager(standardFileManager);
 
         StringWriter output = new StringWriter();
-        List<String> arguments =
-                Arrays.asList(
-                        "-classpath",
-                        System.getProperty("java.class.path"),
-                        "-Xplugin:" + DatadogCompilerPlugin.NAME);
+        List<String> arguments = new ArrayList<>();
+        arguments.add("-classpath");
+        arguments.add(System.getProperty("java.class.path"));
+        arguments.add("-Xplugin:" + DatadogCompilerPlugin.NAME + " " + String.join(" ", args));
+
         List<InMemorySourceFile> compilationUnits =
                 singletonList(new InMemorySourceFile(className, classSource));
 
