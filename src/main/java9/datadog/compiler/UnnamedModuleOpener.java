@@ -7,7 +7,6 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
@@ -59,7 +58,7 @@ public class UnnamedModuleOpener {
                 ModuleFinder moduleFinder = ModuleFinder.instance(context);
                 Name currentModuleName = moduleFinder.moduleNameFromSourceReader.readModuleName(currentModuleInfo);
                 return currentModuleName.toString();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 // ignore
             }
         }
