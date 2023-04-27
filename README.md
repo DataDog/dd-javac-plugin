@@ -29,7 +29,7 @@ Add plugin-client JAR to the project's classpath:
     <dependency>
         <groupId>com.datadoghq</groupId>
         <artifactId>dd-javac-plugin-client</artifactId>
-        <version>0.1.2</version>
+        <version>0.1.4</version>
     </dependency>
 </dependencies>
 ```
@@ -49,7 +49,7 @@ Add plugin JAR to the compiler's annotation processor path and pass the plugin a
                     <annotationProcessorPath>
                         <groupId>com.datadoghq</groupId>
                         <artifactId>dd-javac-plugin</artifactId>
-                        <version>0.1.2</version>
+                        <version>0.1.4</version>
                     </annotationProcessorPath>
                 </annotationProcessorPaths>
                 <compilerArgs>
@@ -73,9 +73,9 @@ the plugin argument:
 
 ```groovy
 dependencies {
-    implementation 'com.datadoghq:dd-javac-plugin-client:0.1.2'
-    annotationProcessor 'com.datadoghq:dd-javac-plugin:0.1.2'
-    testAnnotationProcessor 'com.datadoghq:dd-javac-plugin:0.1.2'
+    implementation 'com.datadoghq:dd-javac-plugin-client:0.1.4'
+    annotationProcessor 'com.datadoghq:dd-javac-plugin:0.1.4'
+    testAnnotationProcessor 'com.datadoghq:dd-javac-plugin:0.1.4'
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -92,7 +92,7 @@ Below is an example for direct compiler invocation:
 
 ```shell
 javac \
-    -classpath dd-javac-plugin-client-0.1.2.jar:dd-javac-plugin-0.1.2.jar:/org/burningwave/core/12.62.7/core-12.62.7.jar:/io/github/toolfactory/jvm-driver/9.4.3/jvm-driver-9.4.3.jar \
+    -classpath dd-javac-plugin-client-0.1.4.jar:dd-javac-plugin-0.1.4.jar:/org/burningwave/core/12.62.7/core-12.62.7.jar:/io/github/toolfactory/jvm-driver/9.4.3/jvm-driver-9.4.3.jar \
     -Xplugin:DatadogCompilerPlugin \
     <PATH_TO_SOURCES>
 ```

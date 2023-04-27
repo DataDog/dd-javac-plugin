@@ -113,27 +113,6 @@ public class DatadogCompilerPluginTest {
         }
     }
 
-    @Test
-    public void testSkipAnnotatingAnnotation() throws Exception {
-        String testClassName = "datadog.compiler.Test";
-        String testClassSource =
-                "package datadog.compiler;\n" +
-                        "import java.lang.annotation.ElementType;\n" +
-                        "import java.lang.annotation.Retention;\n" +
-                        "import java.lang.annotation.RetentionPolicy;\n" +
-                        "import java.lang.annotation.Target;\n" +
-                        "@Retention(RetentionPolicy.CLASS)\n" +
-                        "@Target({ElementType.CONSTRUCTOR, ElementType.FIELD, ElementType.METHOD, ElementType.TYPE})\n" +
-                        "public @interface Test {\n" +
-                        "    String reason();\n" +
-                        "}";
-        try (InMemoryFileManager fileManager = compile(testClassName, testClassSource, DatadogCompilerPlugin.SKIP_ANNOTATIONS_ARGUMENT)) {
-            Class<?> clazz = fileManager.loadCompiledClass(testClassName);
-            String sourcePath = CompilerUtils.getSourcePath(clazz);
-            Assertions.assertEquals(null, sourcePath);
-        }
-    }
-
     private InMemoryFileManager compile(String className, String classSource, String... args) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         StandardJavaFileManager standardFileManager = compiler.getStandardFileManager(null, null, null);

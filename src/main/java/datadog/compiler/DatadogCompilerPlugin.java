@@ -1,7 +1,6 @@
 package datadog.compiler;
 
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.Plugin;
 import com.sun.source.util.TaskEvent;
@@ -27,16 +26,20 @@ import org.burningwave.core.function.ThrowingRunnable;
 
 public class DatadogCompilerPlugin implements Plugin {
 
-    static final String SKIP_ANNOTATIONS_ARGUMENT = "skipAnnotations";
+    private static final String DO_NOT_OPEN_UNNAMED_MODULE_ARGUMENT = "doNotOpenUnnamedModule";
 
     static {
-        // to free users from having to declare --add-exports: https://openjdk.org/jeps/396
-        if (StaticComponentContainer.JVMInfo.getVersion() >= 16) {
-            StaticComponentContainer.Modules.exportToAllUnnamed("jdk.compiler");
+        try {
+            // to free users from having to declare --add-exports: https://openjdk.org/jeps/396
+            if (StaticComponentContainer.JVMInfo.getVersion() >= 16) {
+                StaticComponentContainer.Modules.exportToAllUnnamed("jdk.compiler");
+            }
+            // force classes to be loaded: https://github.com/burningwave/core/discussions/15
+            ThrowingRunnable.class.getClassLoader();
+            Executor.class.getClassLoader();
+        } catch (Throwable e) {
+            // ignore
         }
-        // force classes to be loaded: https://github.com/burningwave/core/discussions/15
-        ThrowingRunnable.class.getClassLoader();
-        Executor.class.getClassLoader();
     }
 
     static final String NAME = "DatadogCompilerPlugin";
@@ -49,14 +52,17 @@ public class DatadogCompilerPlugin implements Plugin {
     @Override
     public void init(JavacTask task, String... strings) {
         if (task instanceof BasicJavacTask) {
-            Collection<String> arguments = Arrays.asList(strings);
-            boolean skipAnnotations = arguments.contains(SKIP_ANNOTATIONS_ARGUMENT);
-
             BasicJavacTask basicJavacTask = (BasicJavacTask) task;
             Context context = basicJavacTask.getContext();
 
+            Collection<String> arguments = Arrays.asList(strings);
+            boolean doNotOpenUnnamedModule = arguments.contains(DO_NOT_OPEN_UNNAMED_MODULE_ARGUMENT);
+            if (!doNotOpenUnnamedModule) {
+                UnnamedModuleOpener.open(context);
+            }
+
             JCTree.JCExpression annotationType = TypeLoader.loadType(context, SourcePath.class);
-            task.addTaskListener(new DatadogCompilerPluginTaskListener(skipAnnotations, context, annotationType));
+            task.addTaskListener(new DatadogCompilerPluginTaskListener(context, annotationType));
             Log.instance(context).printRawLines(Log.WriterKind.NOTICE, NAME + " initialized");
         }
     }
@@ -64,10 +70,8 @@ public class DatadogCompilerPlugin implements Plugin {
     private static final class DatadogCompilerPluginTaskListener implements TaskListener {
         private final Context context;
         private final JCTree.JCExpression annotationType;
-        private final boolean skipAnnotations;
 
-        private DatadogCompilerPluginTaskListener(boolean skipAnnotations, Context context, JCTree.JCExpression annotationType) {
-            this.skipAnnotations = skipAnnotations;
+        private DatadogCompilerPluginTaskListener(Context context, JCTree.JCExpression annotationType) {
             this.context = context;
             this.annotationType = annotationType;
         }
@@ -91,7 +95,7 @@ public class DatadogCompilerPlugin implements Plugin {
                 JCTree.JCLiteral annotationValue = maker.Literal(sourcePath.toString());
                 JCTree.JCAnnotation annotation = maker.Annotation(annotationType, List.of(annotationValue));
 
-                SourcePathInjectingClassVisitor treeVisitor = new SourcePathInjectingClassVisitor(skipAnnotations, annotation);
+                SourcePathInjectingClassVisitor treeVisitor = new SourcePathInjectingClassVisitor(annotation);
                 e.getCompilationUnit().accept(treeVisitor, null);
 
             } catch (Throwable t) {
@@ -110,20 +114,14 @@ public class DatadogCompilerPlugin implements Plugin {
     }
 
     private static final class SourcePathInjectingClassVisitor extends TreeScanner<Void, Void> {
-        private final boolean skipAnnotations;
         private final JCTree.JCAnnotation annotation;
 
-        private SourcePathInjectingClassVisitor(boolean skipAnnotations, JCTree.JCAnnotation annotation) {
-            this.skipAnnotations = skipAnnotations;
+        private SourcePathInjectingClassVisitor(JCTree.JCAnnotation annotation) {
             this.annotation = annotation;
         }
 
         @Override
         public Void visitClass(ClassTree node, Void aVoid) {
-            if (skipAnnotations && node.getKind() == Tree.Kind.ANNOTATION_TYPE) {
-                return super.visitClass(node, aVoid);
-            }
-
             JCTree.JCClassDecl classDeclaration = (JCTree.JCClassDecl) node;
             if (node.getSimpleName().length() > 0) {
                 classDeclaration.mods.annotations = classDeclaration.mods.annotations.prepend(annotation);

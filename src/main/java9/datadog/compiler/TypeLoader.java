@@ -20,5 +20,5 @@ public class TypeLoader {
         TreeMaker maker = TreeMaker.instance(context);
         return maker.Type(annotationSymbol.type);
     }
-    
+
 }
