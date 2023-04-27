@@ -62,17 +62,17 @@ public class DatadogCompilerPlugin implements Plugin {
             }
 
             JCTree.JCExpression annotationType = TypeLoader.loadType(context, SourcePath.class);
-            task.addTaskListener(new DatadogCompilerPluginTaskListener(context, annotationType));
+            task.addTaskListener(new DatadogCompilerPluginTaskListener(basicJavacTask, annotationType));
             Log.instance(context).printRawLines(Log.WriterKind.NOTICE, NAME + " initialized");
         }
     }
 
     private static final class DatadogCompilerPluginTaskListener implements TaskListener {
-        private final Context context;
+        private final BasicJavacTask basicJavacTask;
         private final JCTree.JCExpression annotationType;
 
-        private DatadogCompilerPluginTaskListener(Context context, JCTree.JCExpression annotationType) {
-            this.context = context;
+        private DatadogCompilerPluginTaskListener(BasicJavacTask basicJavacTask, JCTree.JCExpression annotationType) {
+            this.basicJavacTask = basicJavacTask;
             this.annotationType = annotationType;
         }
 
@@ -86,6 +86,7 @@ public class DatadogCompilerPlugin implements Plugin {
                 return;
             }
 
+            Context context = basicJavacTask.getContext();
             try {
                 JavaFileObject sourceFile = e.getSourceFile();
                 URI sourceUri = sourceFile.toUri();
