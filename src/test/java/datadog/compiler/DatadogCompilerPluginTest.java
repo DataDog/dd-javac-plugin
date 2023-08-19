@@ -139,7 +139,7 @@ public class DatadogCompilerPluginTest {
         }
 
         String compiledClassName = resourceName.substring(0, resourceName.lastIndexOf('.')).replace('/', '.');
-        try (InMemoryFileManager fileManager = compile(compiledClassName, classSource, DatadogCompilerPlugin.METHOD_ANNOTATION_DISABLED)) {
+        try (InMemoryFileManager fileManager = compile(compiledClassName, classSource, DatadogCompilerPlugin.DISABLE_METHOD_ANNOTATION)) {
             Class<?> clazz = fileManager.loadCompiledClass(compiledClassName);
             Method method = clazz.getDeclaredMethod(methodName, methodParameterTypes);
             int startLine = CompilerUtils.getStartLine(method);

@@ -36,8 +36,8 @@ import org.burningwave.core.function.ThrowingRunnable;
 
 public class DatadogCompilerPlugin implements Plugin {
 
-    static final String UNNAMED_MODULE_OPEN_DISABLED = "unnabledModuleOpenDisabled";
-    static final String METHOD_ANNOTATION_DISABLED = "methodAnnotationDisabled";
+    static final String DISABLE_UNNAMED_MODULE_OPEN = "disableUnnamedModuleOpen";
+    static final String DISABLE_METHOD_ANNOTATION = "disableMethodAnnotation";
 
     static {
         try {
@@ -67,12 +67,12 @@ public class DatadogCompilerPlugin implements Plugin {
             Context context = basicJavacTask.getContext();
 
             Collection<String> arguments = Arrays.asList(strings);
-            boolean unnamedModuleOpenDisabled = arguments.contains(UNNAMED_MODULE_OPEN_DISABLED);
+            boolean unnamedModuleOpenDisabled = arguments.contains(DISABLE_UNNAMED_MODULE_OPEN);
             if (!unnamedModuleOpenDisabled) {
                 UnnamedModuleOpener.open(context);
             }
 
-            boolean methodAnnotationDisabled = arguments.contains(METHOD_ANNOTATION_DISABLED);
+            boolean methodAnnotationDisabled = arguments.contains(DISABLE_METHOD_ANNOTATION);
             JCTree.JCExpression sourcePathAnnotationType = TypeLoader.loadType(context, SourcePath.class);
             JCTree.JCExpression methodLinesAnnotationType = TypeLoader.loadType(context, MethodLines.class);
             task.addTaskListener(new DatadogCompilerPluginTaskListener(basicJavacTask, sourcePathAnnotationType, methodLinesAnnotationType, methodAnnotationDisabled));

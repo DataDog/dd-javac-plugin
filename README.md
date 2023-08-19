@@ -110,7 +110,7 @@ int endLine = CompilerUtils.getEndLine(method);
 
 ## Additional configuration
 
-Specify `methodAnnotationDisabled` plugin argument if you want to disable annotating public methods.
+Specify `disableMethodAnnotation` plugin argument if you want to disable annotating public methods.
 The argument can be specified in `javac` command line after the `-Xplugin` clause.
 
 ## Limitations
