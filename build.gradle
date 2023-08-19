@@ -88,5 +88,6 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.9.2"
 }
 
+apply from: "$rootDir/gradle/java8-compile.gradle"
 apply from: "$rootDir/gradle/multi-release.gradle"
 apply from: "$rootDir/gradle/publishing.gradle"

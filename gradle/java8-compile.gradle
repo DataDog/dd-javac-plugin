@@ -9,9 +9,3 @@ compileTestJava {
         languageVersion = JavaLanguageVersion.of(8)
     }
 }
-
-test {
-    javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(8)
-    }
-}
