@@ -1,0 +1,16 @@
+if (project.hasProperty("testJdkVersion")) {
+    def testJdkVersion = project.property("testJdkVersion")
+    println "Testing with JDK $testJdkVersion"
+
+    test {
+        javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(Integer.parseInt(testJdkVersion))
+        }
+    }
+}
+
+if (test.javaLauncher.get().metadata.languageVersion.canCompileOrRun(9)) {
+    test {
+        classpath = sourceSets.java9.output + classpath
+    }
+}

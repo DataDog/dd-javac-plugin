@@ -91,3 +91,4 @@ dependencies {
 apply from: "$rootDir/gradle/java8-compile.gradle"
 apply from: "$rootDir/gradle/multi-release.gradle"
 apply from: "$rootDir/gradle/publishing.gradle"
+apply from: "$rootDir/gradle/test.gradle"

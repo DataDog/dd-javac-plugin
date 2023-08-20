@@ -12,13 +12,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 8
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          java-version: "8"
+          java-version: "17"
           distribution: "adopt"
       - name: run-unit-tests
-        run: ./gradlew test
+        run: ./gradlew test -PtestJdkVersion=8
 
   run-tests-jdk-11:
     name: run-unit-tests-jdk-11
@@ -26,13 +26,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 11
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          java-version: "11"
+          java-version: "17"
           distribution: "adopt"
       - name: run-unit-tests
-        run: ./gradlew test
+        run: ./gradlew test -PtestJdkVersion=11
 
   run-tests-jdk-17:
     name: run-unit-tests-jdk-17
@@ -40,24 +40,24 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
           java-version: "17"
           distribution: "adopt"
       - name: run-unit-tests
-        run: ./gradlew test
+        run: ./gradlew test -PtestJdkVersion=17
 
-  run-tests-jdk-19:
-    name: run-unit-tests-jdk-19
+  run-tests-jdk-20:
+    name: run-unit-tests-jdk-20
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 19
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          java-version: "19"
+          java-version: "17"
           distribution: "adopt"
       - name: run-unit-tests
-        run: ./gradlew test
+        run: ./gradlew test -PtestJdkVersion=20

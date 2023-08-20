@@ -21,8 +21,6 @@ import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Position;
-import datadog.compiler.annotations.MethodLines;
-import datadog.compiler.annotations.SourcePath;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.nio.file.Path;
@@ -73,26 +71,17 @@ public class DatadogCompilerPlugin implements Plugin {
             }
 
             boolean methodAnnotationDisabled = arguments.contains(DISABLE_METHOD_ANNOTATION);
-            JCTree.JCExpression sourcePathAnnotationType = TypeLoader.loadType(context, SourcePath.class);
-            JCTree.JCExpression methodLinesAnnotationType = TypeLoader.loadType(context, MethodLines.class);
-            task.addTaskListener(new DatadogCompilerPluginTaskListener(basicJavacTask, sourcePathAnnotationType, methodLinesAnnotationType, methodAnnotationDisabled));
+            task.addTaskListener(new DatadogCompilerPluginTaskListener(basicJavacTask, methodAnnotationDisabled));
             Log.instance(context).printRawLines(Log.WriterKind.NOTICE, NAME + " initialized");
         }
     }
 
     private static final class DatadogCompilerPluginTaskListener implements TaskListener {
         private final BasicJavacTask basicJavacTask;
-        private final JCTree.JCExpression sourcePathAnnotationType;
-        private final JCTree.JCExpression methodLinesAnnotationType;
         private final boolean methodAnnotationDisabled;
 
-        private DatadogCompilerPluginTaskListener(BasicJavacTask basicJavacTask,
-                                                  JCTree.JCExpression sourcePathAnnotationType,
-                                                  JCTree.JCExpression methodLinesAnnotationType,
-                                                  boolean methodAnnotationDisabled) {
+        private DatadogCompilerPluginTaskListener(BasicJavacTask basicJavacTask, boolean methodAnnotationDisabled) {
             this.basicJavacTask = basicJavacTask;
-            this.sourcePathAnnotationType = sourcePathAnnotationType;
-            this.methodLinesAnnotationType = methodLinesAnnotationType;
             this.methodAnnotationDisabled = methodAnnotationDisabled;
         }
 
@@ -113,7 +102,12 @@ public class DatadogCompilerPlugin implements Plugin {
                 Path sourcePath = Paths.get(sourceUri).toAbsolutePath();
 
                 TreeMaker maker = TreeMaker.instance(context);
-                JCTree.JCAnnotation sourcePathAnnotation = maker.Annotation(sourcePathAnnotationType, List.of(maker.Literal(sourcePath.toString())));
+                Names names = Names.instance(context);
+
+                JCTree.JCExpression sourcePathAnnotationType = select(maker, names, "datadog", "compiler", "annotations", "SourcePath");
+                JCTree.JCAnnotation sourcePathAnnotation = annotation(maker, sourcePathAnnotationType, maker.Literal(sourcePath.toString()));
+
+                JCTree.JCExpression methodLinesAnnotationType = select(maker, names, "datadog", "compiler", "annotations", "MethodLines");
 
                 CompilationUnitTree compilationUnit = e.getCompilationUnit();
                 LineMap lineMap = compilationUnit.getLineMap();
@@ -125,7 +119,6 @@ public class DatadogCompilerPlugin implements Plugin {
                     endPositions = null;
                 }
 
-                Names names = Names.instance(context);
                 SourcePathInjectingClassVisitor treeVisitor = new SourcePathInjectingClassVisitor(
                         maker, names, sourcePathAnnotation, methodLinesAnnotationType, methodAnnotationDisabled, lineMap, endPositions);
                 compilationUnit.accept(treeVisitor, null);
@@ -143,6 +136,18 @@ public class DatadogCompilerPlugin implements Plugin {
                 t.printStackTrace(logWriter);
             }
         }
+    }
+
+    private static JCTree.JCExpression select(TreeMaker maker, Names names, String... parts) {
+        JCTree.JCExpression id = maker.Ident(names.fromString(parts[0]));
+        for (int i = 1; i < parts.length; i++) {
+            id = maker.Select(id, names.fromString(parts[i]));
+        }
+        return id;
+    }
+
+    private static JCTree.JCAnnotation annotation(TreeMaker maker, JCTree type, JCTree.JCExpression... arguments) {
+        return maker.Annotation(type, List.from(arguments));
     }
 
     private static final class SourcePathInjectingClassVisitor extends TreeScanner<Void, Void> {
@@ -212,7 +217,7 @@ public class DatadogCompilerPlugin implements Plugin {
                     JCTree.JCLiteral endLiteral = maker.Literal(endLine);
                     JCTree.JCAssign endAssign = maker.Assign(endIdent, endLiteral);
 
-                    JCTree.JCAnnotation methodLinesAnnotation = maker.Annotation(methodLinesAnnotationType, List.of(startAssign, endAssign));
+                    JCTree.JCAnnotation methodLinesAnnotation = annotation(maker, methodLinesAnnotationType, startAssign, endAssign);
                     methodDecl.mods.annotations = methodDecl.mods.annotations.prepend(methodLinesAnnotation);
                 }
             }
