@@ -60,4 +60,9 @@ public abstract class Test {
     }
 
     public static final class InnerClass {}
+
+    @Deprecated
+    public Test() {
+        // no op constructor
+    }
 }

@@ -9,7 +9,7 @@ if (project.hasProperty("testJdkVersion")) {
     }
 }
 
-if (test.javaLauncher.get().metadata.languageVersion.canCompileOrRun(9)) {
+if (test.javaLauncher.isPresent() && test.javaLauncher.get().metadata.languageVersion.canCompileOrRun(9)) {
     test {
         classpath = sourceSets.java9.output + classpath
     }
