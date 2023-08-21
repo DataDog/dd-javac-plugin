@@ -6,7 +6,7 @@ augments compiled classes with some additional data used by Datadog products.
 List of things that the plugin does:
 
 - Annotate every class with a `@SourcePath("...")` annotation that has the path to the class' source code
-  (this data is being used by [Datadog's CI Visibility](https://www.datadoghq.com/product/ci-cd-monitoring/)).
+- Annotate every public method with a `@MethodLines("...")` annotation that has method start and end lines (taking into account method modifiers and annotations)
 
 ## Configuration
 
@@ -99,11 +99,19 @@ javac \
 
 ## Accessing additional compilation data in runtime
 
-To access the class source path information, use `CompilerUtils` class from the `dd-javac-plugin-client`:
+To access the injected information, use `CompilerUtils` class from the `dd-javac-plugin-client`:
 
 ```java
 String sourcePath = CompilerUtils.getSourcePath(MyClass.class);
+
+int startLine = CompilerUtils.getStartLine(method);
+int endLine = CompilerUtils.getEndLine(method);
 ```
+
+## Additional configuration
+
+Specify `disableMethodAnnotation` plugin argument if you want to disable annotating public methods.
+The argument can be specified in `javac` command line after the `-Xplugin` clause.
 
 ## Limitations
 
