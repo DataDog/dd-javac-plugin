@@ -113,18 +113,18 @@ public class DatadogCompilerPluginTest {
 
     private static Stream<Arguments> linesInjectionArguments() {
         return Stream.of(
-                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test",   "regularMethod", new Class[0], 4, 6),
-                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test",   "oneLineMethod", new Class[0], 8, 8),
-                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test",   "splitDefinitionMethod", new Class[0], 10, 14),
-                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test",   "argsLineBreakMethod", new Class[]{int.class, int.class, int.class}, 16, 20),
-                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test",   "privateMethod", new Class[0], CompilerUtils.LINE_UNKNOWN, CompilerUtils.LINE_UNKNOWN),
-                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test",   "defaultMethod", new Class[0], CompilerUtils.LINE_UNKNOWN, CompilerUtils.LINE_UNKNOWN),
-                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test",   "staticFinalMethod", new Class[0], 30, 32),
-                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test",   "abstractMethod", new Class[0], 34, 34),
-                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test",   "annotatedMethod", new Class[0], 36, 40),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "regularMethod", new Class[0], 4, 6),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "oneLineMethod", new Class[0], 8, 8),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "splitDefinitionMethod", new Class[0], 10, 14),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "argsLineBreakMethod", new Class[]{int.class, int.class, int.class}, 16, 20),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "privateMethod", new Class[0], CompilerUtils.LINE_UNKNOWN, CompilerUtils.LINE_UNKNOWN),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "defaultMethod", new Class[0], CompilerUtils.LINE_UNKNOWN, CompilerUtils.LINE_UNKNOWN),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "staticFinalMethod", new Class[0], 30, 32),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "abstractMethod", new Class[0], 34, 34),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "annotatedMethod", new Class[0], 36, 40),
                 Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$1", "run", new Class[0], 44, 46),
-                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test",   "lambda$lambdaMethod$0", new Class[0], CompilerUtils.LINE_UNKNOWN, CompilerUtils.LINE_UNKNOWN), // lines unknown since lambda method is private
-                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test",   "commentedMethod", new Class[0], 58, 60) // we cannot establish correspondence between the method and the comment, so only actual method lines are considered here
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "lambda$lambdaMethod$0", new Class[0], CompilerUtils.LINE_UNKNOWN, CompilerUtils.LINE_UNKNOWN), // lines unknown since lambda method is private
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "commentedMethod", new Class[0], 58, 60) // we cannot establish correspondence between the method and the comment, so only actual method lines are considered here
         );
     }
 
@@ -167,6 +167,29 @@ public class DatadogCompilerPluginTest {
             int endLine = CompilerUtils.getEndLine(method);
             Assertions.assertEquals(CompilerUtils.LINE_UNKNOWN, startLine);
             Assertions.assertEquals(CompilerUtils.LINE_UNKNOWN, endLine);
+        }
+    }
+
+    @Test
+    public void testInjectionSkippedIfAnnotationsAlreadyPresent() throws Exception {
+        String resourceName = "datadog/compiler/TestAnnotated.java";
+
+        String classSource;
+        try (InputStream classStream = ClassLoader.getSystemResourceAsStream(resourceName)) {
+            classSource = IOUtils.toString(classStream, Charset.defaultCharset());
+        }
+
+        String compiledClassName = resourceName.substring(0, resourceName.lastIndexOf('.')).replace('/', '.');
+        try (InMemoryFileManager fileManager = compile(compiledClassName, classSource)) {
+            Class<?> clazz = fileManager.loadCompiledClass(compiledClassName);
+            String sourcePath = CompilerUtils.getSourcePath(clazz);
+            Assertions.assertEquals("the-source-path", sourcePath);
+
+            Method method = clazz.getDeclaredMethod("annotatedMethod");
+            int startLine = CompilerUtils.getStartLine(method);
+            int endLine = CompilerUtils.getEndLine(method);
+            Assertions.assertEquals(1, startLine);
+            Assertions.assertEquals(2, endLine);
         }
     }
 
