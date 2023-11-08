@@ -127,7 +127,7 @@ public class DatadogCompilerPlugin implements Plugin {
                 Log log = Log.instance(context);
                 log.printRawLines(
                         Log.WriterKind.WARNING,
-                        "Could not inject source path field into "
+                        "Could not inject source information into "
                                 + log.currentSourceFile().toUri()
                                 + ": "
                                 + t.getMessage());
@@ -178,6 +178,15 @@ public class DatadogCompilerPlugin implements Plugin {
         @Override
         public Void visitClass(ClassTree node, Void aVoid) {
             JCTree.JCClassDecl classDeclaration = (JCTree.JCClassDecl) node;
+            for (JCTree.JCAnnotation annotation : classDeclaration.mods.annotations) {
+                if (annotation.annotationType.toString().endsWith("SourcePath")) {
+                    // The method is already annotated with @SourcePath.
+                    // This can happen, for instance, when code-generation tools are used
+                    // that copy annotations from interface to class
+                    return super.visitClass(node, aVoid);
+                }
+            }
+
             if (node.getSimpleName().length() > 0) {
                 classDeclaration.mods.annotations = classDeclaration.mods.annotations.prepend(sourcePathAnnotation);
             }
@@ -187,6 +196,16 @@ public class DatadogCompilerPlugin implements Plugin {
         public Void visitMethod(MethodTree node, Void aVoid) {
             if (!methodAnnotationDisabled && (node instanceof JCTree.JCMethodDecl)) {
                 JCTree.JCMethodDecl methodDecl = (JCTree.JCMethodDecl) node;
+
+                for (JCTree.JCAnnotation annotation : methodDecl.mods.annotations) {
+                    if (annotation.annotationType.toString().endsWith("MethodLines")) {
+                        // The method is already annotated with @MethodLines.
+                        // This can happen, for instance, when code-generation tools are used
+                        // that copy annotations from interface methods to class methods
+                        return super.visitMethod(node, aVoid);
+                    }
+                }
+
                 JCTree.JCModifiers modifiers = methodDecl.getModifiers();
                 if ((modifiers.flags & Flags.PUBLIC) != 0) {
 
