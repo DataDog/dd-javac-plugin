@@ -3,11 +3,11 @@ sourceSets {
         java {
             srcDir 'src/main/java9'
         }
-        compileClasspath += sourceSets.main.output
     }
 }
 
 compileJava9Java {
+    classpath += sourceSets.main.compileClasspath
     javaCompiler = javaToolchains.compilerFor {
         languageVersion = JavaLanguageVersion.of(9)
     }
