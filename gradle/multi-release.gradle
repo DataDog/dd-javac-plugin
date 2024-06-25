@@ -3,6 +3,7 @@ sourceSets {
         java {
             srcDir 'src/main/java9'
         }
+        compileClasspath += sourceSets.main.output
     }
 }
 
