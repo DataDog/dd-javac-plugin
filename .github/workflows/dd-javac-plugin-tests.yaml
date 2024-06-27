@@ -18,8 +18,7 @@ jobs:
         with:
           java-version: |
             8
-            9
-            17
+            11
           distribution: "adopt"
       - name: run-unit-tests
         run: ./gradlew test -PtestJdkVersion=8
@@ -35,9 +34,7 @@ jobs:
         with:
           java-version: |
             8
-            9
             11
-            17
           distribution: "adopt"
       - name: run-unit-tests
         run: ./gradlew test -PtestJdkVersion=11
@@ -53,7 +50,7 @@ jobs:
         with:
           java-version: |
             8
-            9
+            11
             17
           distribution: "adopt"
       - name: run-unit-tests
@@ -70,8 +67,7 @@ jobs:
         with:
           java-version: |
             8
-            9
-            17
+            11
             21
           distribution: "adopt"
       - name: run-unit-tests

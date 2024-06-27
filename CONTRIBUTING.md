@@ -28,4 +28,4 @@ In `Project Settings` -> `Modules` ensure that the following modules have JDK 8 
 - `dd-javac-plugin-client/main`
 - `dd-javac-plugin-client/test`
 
-`java9` module needs JDK 9 set as its module SDK.
+`java11` module needs JDK 11 set as its module SDK.
