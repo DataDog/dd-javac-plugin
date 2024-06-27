@@ -5,8 +5,7 @@ and discuss your ideas or propose the changes you wish to make. After a resoluti
 
 ## Requirements
 
-A JDK needs to be installed in order to run Gradle.
-Minimum supported version is JDK 8.  
+Building the project requires Java 8 and Java 11 to be installed.
 
 # Building
 
