@@ -85,14 +85,13 @@ tasks.withType(JavaCompile).configureEach {
 
 ### Other
 
-If you're using any other build system, just make sure to add the plugin 
-(plus the plugin's transitive dependencies, there are not many)
-and client JARs to the compiler's classpath, and pass the plugin argument.
+If you're using any other build system, download `dd-javac-plugin-<VERSION>-all.jar` from the [latest GitHub release](https://github.com/DataDog/dd-javac-plugin/releases/latest) page.
+Add it to the compiler's classpath, and pass the plugin argument.
 Below is an example for direct compiler invocation:
 
 ```shell
 javac \
-    -classpath dd-javac-plugin-client-0.2.0.jar:dd-javac-plugin-0.2.0.jar:/org/burningwave/core/12.62.7/core-12.62.7.jar:/io/github/toolfactory/jvm-driver/9.4.3/jvm-driver-9.4.3.jar \
+    -classpath dd-javac-plugin-client-0.2.1-all.jar \
     -Xplugin:DatadogCompilerPlugin \
     <PATH_TO_SOURCES>
 ```

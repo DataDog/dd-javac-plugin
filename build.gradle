@@ -3,6 +3,7 @@ import org.gradle.internal.jvm.Jvm
 plugins {
     id "io.github.gradle-nexus.publish-plugin" version "1.0.0"
     id "net.researchgate.release" version "3.0.2"
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 allprojects {
@@ -82,7 +83,7 @@ apply from: "$rootDir/gradle/publishing.gradle"
 apply from: "$rootDir/gradle/test.gradle"
 
 dependencies {
-    implementation files(jvm8.toolsJar)
+    compileOnly files(jvm8.toolsJar)
 
     api "org.burningwave:core:12.65.1"
     api project(":dd-javac-plugin-client")
@@ -90,5 +91,7 @@ dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.9.2"
     testImplementation "org.junit.jupiter:junit-jupiter-params:5.9.2"
     testImplementation "commons-io:commons-io:2.11.0"
+
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.9.2"
+    testRuntimeOnly files(jvm8.toolsJar)
 }
