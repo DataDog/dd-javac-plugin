@@ -20,11 +20,11 @@ import javax.tools.JavaFileObject;
 
 final class DatadogTaskListener implements TaskListener {
     private final BasicJavacTask basicJavacTask;
-    private final boolean methodAnnotationDisabled;
+    private final boolean sourceLinesAnnotationDisabled;
 
-    DatadogTaskListener(BasicJavacTask basicJavacTask, boolean methodAnnotationDisabled) {
+    DatadogTaskListener(BasicJavacTask basicJavacTask, boolean sourceLinesAnnotationDisabled) {
         this.basicJavacTask = basicJavacTask;
-        this.methodAnnotationDisabled = methodAnnotationDisabled;
+        this.sourceLinesAnnotationDisabled = sourceLinesAnnotationDisabled;
     }
 
     @Override
@@ -54,7 +54,7 @@ final class DatadogTaskListener implements TaskListener {
             JCTree.JCExpression sourcePathAnnotationType = select(maker, names, "datadog", "compiler", "annotations", "SourcePath");
             JCTree.JCAnnotation sourcePathAnnotation = annotation(maker, sourcePathAnnotationType, maker.Literal(sourcePath.toString()));
 
-            JCTree.JCExpression methodLinesAnnotationType = select(maker, names, "datadog", "compiler", "annotations", "MethodLines");
+            JCTree.JCExpression sourceLinesAnnotationType = select(maker, names, "datadog", "compiler", "annotations", "SourceLines");
 
             CompilationUnitTree compilationUnit = e.getCompilationUnit();
             LineMap lineMap = compilationUnit.getLineMap();
@@ -67,7 +67,7 @@ final class DatadogTaskListener implements TaskListener {
             }
 
             AnnotationsInjectingClassVisitor treeVisitor = new AnnotationsInjectingClassVisitor(
-                    maker, names, sourcePathAnnotation, methodLinesAnnotationType, methodAnnotationDisabled, lineMap, endPositions);
+                    maker, names, sourcePathAnnotation, sourceLinesAnnotationType, sourceLinesAnnotationDisabled, lineMap, endPositions);
             compilationUnit.accept(treeVisitor, null);
 
         } catch (Throwable t) {

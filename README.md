@@ -6,7 +6,7 @@ augments compiled classes with some additional data used by Datadog products.
 List of things that the plugin does:
 
 - Annotate every class with a `@SourcePath("...")` annotation that has the path to the class' source code
-- Annotate every public method with a `@MethodLines("...")` annotation that has method start and end lines (taking into account method modifiers and annotations)
+- Annotate every class, interface, enum and public method with a `@SourceLines("...")` annotation that has start and end lines (taking into account modifiers and annotations)
 
 ## Configuration
 
@@ -29,7 +29,7 @@ Add plugin-client JAR to the project's classpath:
     <dependency>
         <groupId>com.datadoghq</groupId>
         <artifactId>dd-javac-plugin-client</artifactId>
-        <version>0.2.0</version>
+        <version>0.2.2</version>
     </dependency>
 </dependencies>
 ```
@@ -49,7 +49,7 @@ Add plugin JAR to the compiler's annotation processor path and pass the plugin a
                     <annotationProcessorPath>
                         <groupId>com.datadoghq</groupId>
                         <artifactId>dd-javac-plugin</artifactId>
-                        <version>0.2.0</version>
+                        <version>0.2.2</version>
                     </annotationProcessorPath>
                 </annotationProcessorPaths>
                 <compilerArgs>
@@ -73,9 +73,9 @@ the plugin argument:
 
 ```groovy
 dependencies {
-    implementation 'com.datadoghq:dd-javac-plugin-client:0.2.0'
-    annotationProcessor 'com.datadoghq:dd-javac-plugin:0.2.0'
-    testAnnotationProcessor 'com.datadoghq:dd-javac-plugin:0.2.0'
+    implementation 'com.datadoghq:dd-javac-plugin-client:0.2.2'
+    annotationProcessor 'com.datadoghq:dd-javac-plugin:0.2.2'
+    testAnnotationProcessor 'com.datadoghq:dd-javac-plugin:0.2.2'
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -91,7 +91,7 @@ Below is an example for direct compiler invocation:
 
 ```shell
 javac \
-    -classpath dd-javac-plugin-client-0.2.1-all.jar \
+    -classpath dd-javac-plugin-client-0.2.2-all.jar \
     -Xplugin:DatadogCompilerPlugin \
     <PATH_TO_SOURCES>
 ```
@@ -103,13 +103,16 @@ To access the injected information, use `CompilerUtils` class from the `dd-javac
 ```java
 String sourcePath = CompilerUtils.getSourcePath(MyClass.class);
 
-int startLine = CompilerUtils.getStartLine(method);
-int endLine = CompilerUtils.getEndLine(method);
+int classStartLine = CompilerUtils.getStartLine(MyClass.class);
+int classEndLine = CompilerUtils.getEndLine(MyClass.class);
+
+int methodStartLine = CompilerUtils.getStartLine(method);
+int methodEndLine = CompilerUtils.getEndLine(method);
 ```
 
 ## Additional configuration
 
-Specify `disableMethodAnnotation` plugin argument if you want to disable annotating public methods.
+Specify `disableSourceLinesAnnotation` plugin argument if you want to disable annotating source lines.
 The argument can be specified in `javac` command line after the `-Xplugin` clause.
 
 ## Limitations
