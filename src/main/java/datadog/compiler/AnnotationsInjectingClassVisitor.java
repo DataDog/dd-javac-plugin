@@ -67,7 +67,7 @@ public class AnnotationsInjectingClassVisitor extends TreeScanner<Void, Void> {
             classDeclaration.mods.annotations = classDeclaration.mods.annotations.prepend(sourcePathAnnotation);
         }
 
-        if (!sourceLinesDetected) {
+        if (!sourceLinesAnnotationDisabled && !sourceLinesDetected) {
             JCTree.JCModifiers modifiers = classDeclaration.getModifiers();
 
             int startPosition = modifiers.getStartPosition();
