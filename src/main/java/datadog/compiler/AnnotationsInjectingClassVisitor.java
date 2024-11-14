@@ -80,20 +80,7 @@ public class AnnotationsInjectingClassVisitor extends TreeScanner<Void, Void> {
                 return super.visitClass(node, aVoid);
             }
 
-            int startLine = (int) lineMap.getLineNumber(startPosition);
-            int endLine = (int) lineMap.getLineNumber(endPosition);
-
-            Name startName = names.fromString("start");
-            JCTree.JCIdent startIdent = maker.Ident(startName);
-            JCTree.JCLiteral startLiteral = maker.Literal(startLine);
-            JCTree.JCAssign startAssign = maker.Assign(startIdent, startLiteral);
-
-            Name endName = names.fromString("end");
-            JCTree.JCIdent endIdent = maker.Ident(endName);
-            JCTree.JCLiteral endLiteral = maker.Literal(endLine);
-            JCTree.JCAssign endAssign = maker.Assign(endIdent, endLiteral);
-
-            JCTree.JCAnnotation sourceLinesAnnotation = annotation(maker, sourceLinesAnnotationType, startAssign, endAssign);
+            JCTree.JCAnnotation sourceLinesAnnotation = sourceLinesAnnotation(startPosition, endPosition);
             classDeclaration.mods.annotations = classDeclaration.mods.annotations.prepend(sourceLinesAnnotation);
         }
 
@@ -130,24 +117,28 @@ public class AnnotationsInjectingClassVisitor extends TreeScanner<Void, Void> {
                     }
                 }
 
-                int startLine = (int) lineMap.getLineNumber(startPosition);
-                int endLine = (int) lineMap.getLineNumber(endPosition);
-
-                Name startName = names.fromString("start");
-                JCTree.JCIdent startIdent = maker.Ident(startName);
-                JCTree.JCLiteral startLiteral = maker.Literal(startLine);
-                JCTree.JCAssign startAssign = maker.Assign(startIdent, startLiteral);
-
-                Name endName = names.fromString("end");
-                JCTree.JCIdent endIdent = maker.Ident(endName);
-                JCTree.JCLiteral endLiteral = maker.Literal(endLine);
-                JCTree.JCAssign endAssign = maker.Assign(endIdent, endLiteral);
-
-                JCTree.JCAnnotation sourceLinesAnnotation = annotation(maker, sourceLinesAnnotationType, startAssign, endAssign);
+                JCTree.JCAnnotation sourceLinesAnnotation = sourceLinesAnnotation(startPosition, endPosition);
                 methodDecl.mods.annotations = methodDecl.mods.annotations.prepend(sourceLinesAnnotation);
             }
         }
         return super.visitMethod(node, aVoid);
+    }
+
+    private JCTree.JCAnnotation sourceLinesAnnotation(int startPosition, int endPosition) {
+        int startLine = (int) lineMap.getLineNumber(startPosition);
+        int endLine = (int) lineMap.getLineNumber(endPosition);
+
+        Name startName = names.fromString("start");
+        JCTree.JCIdent startIdent = maker.Ident(startName);
+        JCTree.JCLiteral startLiteral = maker.Literal(startLine);
+        JCTree.JCAssign startAssign = maker.Assign(startIdent, startLiteral);
+
+        Name endName = names.fromString("end");
+        JCTree.JCIdent endIdent = maker.Ident(endName);
+        JCTree.JCLiteral endLiteral = maker.Literal(endLine);
+        JCTree.JCAssign endAssign = maker.Assign(endIdent, endLiteral);
+
+        return annotation(maker, sourceLinesAnnotationType, startAssign, endAssign);
     }
 
     private static JCTree.JCAnnotation annotation(TreeMaker maker, JCTree type, JCTree.JCExpression... arguments) {
