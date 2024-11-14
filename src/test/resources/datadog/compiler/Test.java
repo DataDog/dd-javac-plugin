@@ -65,4 +65,35 @@ public abstract class Test {
     public Test() {
         // no op constructor
     }
+
+    public
+    class
+    SplitDefinitionClass {
+        // no op
+    }
+
+    private class PrivateClass {
+        // no op
+    }
+
+    class DefaultClass {
+        // no op
+    }
+
+    public static final class StaticFinalClass {
+        // no op
+    }
+
+    @Deprecated
+    public class AnnotatedClass {
+        // no op
+    }
+
+    /**
+     * Multi line
+     * comment
+     */
+    public class CommentedClass {
+        // no op
+    }
 }

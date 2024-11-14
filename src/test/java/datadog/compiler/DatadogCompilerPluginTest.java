@@ -63,7 +63,11 @@ public class DatadogCompilerPluginTest {
         try (InMemoryFileManager fileManager = compile(compiledClassName, classSource)) {
             Class<?> clazz = fileManager.loadCompiledClass(compiledClassName);
             String sourcePath = CompilerUtils.getSourcePath(clazz);
+            int startLine = CompilerUtils.getStartLine(clazz);
+            int endLine = CompilerUtils.getEndLine(clazz);
             Assertions.assertEquals(InMemorySourceFile.sourcePath(compiledClassName), sourcePath, "source path was not injected");
+            Assertions.assertEquals(startLine, 3, "source lines was not injected");
+            Assertions.assertEquals(endLine, 5, "source lines was not injected");
             Assertions.assertNotNull(clazz.getAnnotation(Deprecated.class), "existing annotation was not preserved");
         }
     }
@@ -88,7 +92,7 @@ public class DatadogCompilerPluginTest {
     }
 
     @ParameterizedTest
-    @MethodSource("linesInjectionArguments")
+    @MethodSource("methodLinesInjectionArguments")
     public void testMethodLinesInjection(String resourceName,
                                          String className,
                                          String methodName,
@@ -111,7 +115,7 @@ public class DatadogCompilerPluginTest {
         }
     }
 
-    private static Stream<Arguments> linesInjectionArguments() {
+    private static Stream<Arguments> methodLinesInjectionArguments() {
         return Stream.of(
                 Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "regularMethod", new Class[0], 4, 6),
                 Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "oneLineMethod", new Class[0], 8, 8),
@@ -148,8 +152,43 @@ public class DatadogCompilerPluginTest {
         }
     }
 
+    @ParameterizedTest
+    @MethodSource("classLinesInjectionArguments")
+    public void testClassLinesInjection(String resourceName,
+                                         String className,
+                                         int expectedStart,
+                                         int expectedEnd) throws Exception {
+        String classSource;
+        try (InputStream classStream = ClassLoader.getSystemResourceAsStream(resourceName)) {
+            classSource = IOUtils.toString(classStream, Charset.defaultCharset());
+        }
+
+        String compiledClassName = resourceName.substring(0, resourceName.lastIndexOf('.')).replace('/', '.');
+        try (InMemoryFileManager fileManager = compile(compiledClassName, classSource)) {
+            Class<?> clazz = fileManager.loadCompiledClass(className);
+            int startLine = CompilerUtils.getStartLine(clazz);
+            int endLine = CompilerUtils.getEndLine(clazz);
+            Assertions.assertEquals(expectedStart, startLine);
+            Assertions.assertEquals(expectedEnd, endLine);
+        }
+    }
+
+    private static Stream<Arguments> classLinesInjectionArguments() {
+        return Stream.of(
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", 3, 99),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$1", CompilerUtils.LINE_UNKNOWN, CompilerUtils.LINE_UNKNOWN), // lines unknown for anonymous class
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$InnerClass", 62, 62),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$SplitDefinitionClass", 69, 73),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$PrivateClass", 75, 77),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$DefaultClass", 79, 81),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$StaticFinalClass", 83, 85),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$AnnotatedClass", 87, 90),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$CommentedClass", 96, 98) // we cannot establish correspondence between the class and the comment, so only actual class lines are considered here
+        );
+    }
+
     @Test
-    public void testMethodAnnotationDisabled() throws Exception {
+    public void testSourceLinesAnnotationDisabled() throws Exception {
         String resourceName = "datadog/compiler/Test.java";
         String methodName = "regularMethod";
         Class<?>[] methodParameterTypes = new Class[0];
@@ -160,13 +199,18 @@ public class DatadogCompilerPluginTest {
         }
 
         String compiledClassName = resourceName.substring(0, resourceName.lastIndexOf('.')).replace('/', '.');
-        try (InMemoryFileManager fileManager = compile(compiledClassName, classSource, DatadogCompilerPlugin.DISABLE_METHOD_ANNOTATION)) {
+        try (InMemoryFileManager fileManager = compile(compiledClassName, classSource, DatadogCompilerPlugin.DISABLE_SOURCE_LINES_ANNOTATION)) {
             Class<?> clazz = fileManager.loadCompiledClass(compiledClassName);
+            int classStartLine = CompilerUtils.getStartLine(clazz);
+            int classEndLine = CompilerUtils.getEndLine(clazz);
+            Assertions.assertEquals(CompilerUtils.LINE_UNKNOWN, classStartLine);
+            Assertions.assertEquals(CompilerUtils.LINE_UNKNOWN, classEndLine);
+
             Method method = clazz.getDeclaredMethod(methodName, methodParameterTypes);
-            int startLine = CompilerUtils.getStartLine(method);
-            int endLine = CompilerUtils.getEndLine(method);
-            Assertions.assertEquals(CompilerUtils.LINE_UNKNOWN, startLine);
-            Assertions.assertEquals(CompilerUtils.LINE_UNKNOWN, endLine);
+            int methodStartLine = CompilerUtils.getStartLine(method);
+            int methodEndLine = CompilerUtils.getEndLine(method);
+            Assertions.assertEquals(CompilerUtils.LINE_UNKNOWN, methodStartLine);
+            Assertions.assertEquals(CompilerUtils.LINE_UNKNOWN, methodEndLine);
         }
     }
 
@@ -182,14 +226,21 @@ public class DatadogCompilerPluginTest {
         String compiledClassName = resourceName.substring(0, resourceName.lastIndexOf('.')).replace('/', '.');
         try (InMemoryFileManager fileManager = compile(compiledClassName, classSource)) {
             Class<?> clazz = fileManager.loadCompiledClass(compiledClassName);
+
             String sourcePath = CompilerUtils.getSourcePath(clazz);
             Assertions.assertEquals("the-source-path", sourcePath);
 
+            int classStartLine = CompilerUtils.getStartLine(clazz);
+            int classEndLine = CompilerUtils.getEndLine(clazz);
+            Assertions.assertEquals(1, classStartLine);
+            Assertions.assertEquals(2, classEndLine);
+
             Method method = clazz.getDeclaredMethod("annotatedMethod");
-            int startLine = CompilerUtils.getStartLine(method);
-            int endLine = CompilerUtils.getEndLine(method);
-            Assertions.assertEquals(1, startLine);
-            Assertions.assertEquals(2, endLine);
+
+            int methodStartLine = CompilerUtils.getStartLine(method);
+            int methodEndLine = CompilerUtils.getEndLine(method);
+            Assertions.assertEquals(1, methodStartLine);
+            Assertions.assertEquals(2, methodEndLine);
         }
     }
 
