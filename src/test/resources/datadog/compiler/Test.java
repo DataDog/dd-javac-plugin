@@ -100,4 +100,8 @@ public abstract class Test {
     public interface TestInterface {
         // empty interface
     }
+
+    public enum TestEnum {
+        // empty enum
+    }
 }
