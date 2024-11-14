@@ -65,4 +65,43 @@ public abstract class Test {
     public Test() {
         // no op constructor
     }
+
+    public
+    class
+    SplitDefinitionClass {
+        // empty class
+    }
+
+    private class PrivateClass {
+        // empty class
+    }
+
+    class DefaultClass {
+        // empty class
+    }
+
+    public static final class StaticFinalClass {
+        // empty class
+    }
+
+    @Deprecated
+    public class AnnotatedClass {
+        // empty class
+    }
+
+    /**
+     * Multi line
+     * comment
+     */
+    public class CommentedClass {
+        // empty class
+    }
+
+    public interface TestInterface {
+        // empty interface
+    }
+
+    public enum TestEnum {
+        // empty enum
+    }
 }

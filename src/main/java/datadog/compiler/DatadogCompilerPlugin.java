@@ -10,7 +10,7 @@ import java.util.Collection;
 
 public class DatadogCompilerPlugin implements Plugin {
 
-    static final String DISABLE_METHOD_ANNOTATION = "disableMethodAnnotation";
+    static final String DISABLE_SOURCE_LINES_ANNOTATION = "disableSourceLinesAnnotation";
 
     static {
         CompilerModuleOpener.setup();
@@ -30,8 +30,8 @@ public class DatadogCompilerPlugin implements Plugin {
             Context context = basicJavacTask.getContext();
 
             Collection<String> arguments = Arrays.asList(strings);
-            boolean methodAnnotationDisabled = arguments.contains(DISABLE_METHOD_ANNOTATION);
-            task.addTaskListener(new DatadogTaskListener(basicJavacTask, methodAnnotationDisabled));
+            boolean sourceLinesAnnotationDisabled = arguments.contains(DISABLE_SOURCE_LINES_ANNOTATION);
+            task.addTaskListener(new DatadogTaskListener(basicJavacTask, sourceLinesAnnotationDisabled));
 
             Log.instance(context).printRawLines(Log.WriterKind.NOTICE, NAME + " initialized");
         }
