@@ -175,7 +175,7 @@ public class DatadogCompilerPluginTest {
 
     private static Stream<Arguments> classLinesInjectionArguments() {
         return Stream.of(
-                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", 3, 99),
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", 3, 103),
                 Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$1", CompilerUtils.LINE_UNKNOWN, CompilerUtils.LINE_UNKNOWN), // lines unknown for anonymous class
                 Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$InnerClass", 62, 62),
                 Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$SplitDefinitionClass", 69, 73),
@@ -183,7 +183,8 @@ public class DatadogCompilerPluginTest {
                 Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$DefaultClass", 79, 81),
                 Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$StaticFinalClass", 83, 85),
                 Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$AnnotatedClass", 87, 90),
-                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$CommentedClass", 96, 98) // we cannot establish correspondence between the class and the comment, so only actual class lines are considered here
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$CommentedClass", 96, 98), // we cannot establish correspondence between the class and the comment, so only actual class lines are considered here
+                Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test$TestInterface", 100, 102)
         );
     }
 

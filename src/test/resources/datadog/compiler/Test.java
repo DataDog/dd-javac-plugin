@@ -69,24 +69,24 @@ public abstract class Test {
     public
     class
     SplitDefinitionClass {
-        // no op
+        // empty class
     }
 
     private class PrivateClass {
-        // no op
+        // empty class
     }
 
     class DefaultClass {
-        // no op
+        // empty class
     }
 
     public static final class StaticFinalClass {
-        // no op
+        // empty class
     }
 
     @Deprecated
     public class AnnotatedClass {
-        // no op
+        // empty class
     }
 
     /**
@@ -94,6 +94,10 @@ public abstract class Test {
      * comment
      */
     public class CommentedClass {
-        // no op
+        // empty class
+    }
+
+    public interface TestInterface {
+        // empty interface
     }
 }
