@@ -85,7 +85,7 @@ apply from: "$rootDir/gradle/test.gradle"
 dependencies {
     compileOnly files(jvm8.toolsJar)
 
-    api "org.burningwave:core:12.65.1"
+    api "org.burningwave:core:12.66.2"
     api project(":dd-javac-plugin-client")
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.9.2"
