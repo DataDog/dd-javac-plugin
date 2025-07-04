@@ -75,3 +75,20 @@ jobs:
           distribution: "adopt"
       - name: run-unit-tests
         run: ./gradlew test -PtestJdkVersion=21
+
+  run-tests-jdk-24:
+    name: run-unit-tests-jdk-24
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: |
+            8
+            11
+            24
+          distribution: "adopt"
+      - name: run-unit-tests
+        run: ./gradlew test -PtestJdkVersion=24
