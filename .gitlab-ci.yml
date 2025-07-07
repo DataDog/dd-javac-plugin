@@ -30,9 +30,9 @@ deploy_to_sonatype:
     - python3 -m pip install awscli
 
     - echo "Fetching Sonatype user..."
-    - export SONATYPE_USER=$(aws ssm get-parameter --region us-east-1 --name ci.dd-javac-plugin.publishing.sonatype_username --with-decryption --query "Parameter.Value" --out text)
+    - export SONATYPE_USER=$(aws ssm get-parameter --region us-east-1 --name ci.dd-javac-plugin.central_username --with-decryption --query "Parameter.Value" --out text)
     - echo "Fetching Sonatype password..."
-    - export SONATYPE_PASS=$(aws ssm get-parameter --region us-east-1 --name ci.dd-javac-plugin.publishing.sonatype_password --with-decryption --query "Parameter.Value" --out text)
+    - export SONATYPE_PASS=$(aws ssm get-parameter --region us-east-1 --name ci.dd-javac-plugin.central_password --with-decryption --query "Parameter.Value" --out text)
 
     - echo "Fetching GPG private key..."
     - export GPG_PRIVATE_KEY=$(aws ssm get-parameter --region us-east-1 --name ci.dd-javac-plugin.signing.gpg_private_key --with-decryption --query "Parameter.Value" --out text)
