@@ -10,6 +10,8 @@ List of things that the plugin does:
 
 ## Configuration
 
+> **Warning:** If you are using Java 26 or above without the Datadog Java agent, additional `--add-exports` flags are required. See the [Java 26+](#java-26) section for details.
+
 The following conditions need to be satisfied in order for the plugin to work:
 
 - the plugin JAR needs to be added to the compiler's annotation processor path
@@ -114,6 +116,49 @@ int methodEndLine = CompilerUtils.getEndLine(method);
 
 Specify `disableSourceLinesAnnotation` plugin argument if you want to disable annotating source lines.
 The argument can be specified in `javac` command line after the `-Xplugin` clause.
+
+## Java 26+
+
+Starting with Java 26, the JDK no longer allows reflective access to internal compiler packages from unnamed modules.
+If you are using the standalone compiler plugin (without the Datadog Java agent), you need to add the following `--add-exports` flags to your `javac` invocation:
+
+```
+--add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
+--add-exports jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED
+--add-exports jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED
+--add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED
+--add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+```
+
+When using Maven, add these to the `compilerArgs` section:
+
+```xml
+<compilerArgs>
+    <arg>-Xplugin:DatadogCompilerPlugin</arg>
+    <arg>--add-exports</arg><arg>jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+    <arg>--add-exports</arg><arg>jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+    <arg>--add-exports</arg><arg>jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+    <arg>--add-exports</arg><arg>jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+    <arg>--add-exports</arg><arg>jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+</compilerArgs>
+```
+
+When using Gradle:
+
+```groovy
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.addAll([
+        '-Xplugin:DatadogCompilerPlugin',
+        '--add-exports', 'jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+        '--add-exports', 'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+        '--add-exports', 'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+        '--add-exports', 'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+        '--add-exports', 'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+    ])
+}
+```
+
+> Note: If you are using the Datadog Java agent, these exports are configured automatically and no manual action is needed.
 
 ## Limitations
 
