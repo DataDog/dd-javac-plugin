@@ -63,7 +63,7 @@ create_key:
   stage: create_key
   when: manual
   needs: [ ]
-  tags: [ "docker-in-docker:amd64", "size:large" ]
+  tags: [ "docker-in-docker:amd64" ]
   variables:
     PROJECT_NAME: "dd-javac-plugin"
     EXPORT_TO_KEYSERVER: "true"
