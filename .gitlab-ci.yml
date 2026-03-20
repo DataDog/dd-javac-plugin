@@ -15,7 +15,7 @@ deploy_to_sonatype:
       allow_failure: true
 
   tags:
-    - "runner:docker"
+    - "docker-in-docker:amd64"
 
   image: openjdk:8
 
@@ -63,7 +63,7 @@ create_key:
   stage: create_key
   when: manual
   needs: [ ]
-  tags: [ "runner:docker", "size:large" ]
+  tags: [ "docker-in-docker:amd64", "size:large" ]
   variables:
     PROJECT_NAME: "dd-javac-plugin"
     EXPORT_TO_KEYSERVER: "true"
