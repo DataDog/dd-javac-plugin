@@ -20,6 +20,16 @@ public class CompilerModuleOpener {
      * </ul>
      */
     public static void setup() {
+        // On Java 26+, burningwave's StaticComponentContainer fails to initialize because its
+        // transitive dependency (jvm-driver) uses a Class.forName0 signature that was removed
+        // in JDK 26 (JEP 471/498). The failure prints a noisy stacktrace to stderr even though
+        // the exception is caught. When running with the dd-trace-java agent, module exports are
+        // already handled by CompilerModuleExporter via Instrumentation.redefineModule(), so
+        // burningwave is not needed. For standalone usage, --add-exports flags must be provided
+        // manually (see README).
+        if (Runtime.version().feature() >= 26) {
+            return;
+        }
         try {
             if (StaticComponentContainer.JVMInfo.getVersion() >= 16) {
                 StaticComponentContainer.Modules.exportToAllUnnamed("jdk.compiler");
