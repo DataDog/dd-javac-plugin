@@ -1,9 +1,5 @@
 package datadog.compiler;
 
-import java.util.concurrent.Executor;
-import org.burningwave.core.assembler.StaticComponentContainer;
-import org.burningwave.core.function.ThrowingRunnable;
-
 public class CompilerModuleOpener {
 
     /**
@@ -30,15 +26,9 @@ public class CompilerModuleOpener {
         if (Runtime.version().feature() >= 26) {
             return;
         }
-        try {
-            if (StaticComponentContainer.JVMInfo.getVersion() >= 16) {
-                StaticComponentContainer.Modules.exportToAllUnnamed("jdk.compiler");
-            }
-            // force classes to be loaded: https://github.com/burningwave/core/discussions/15
-            ThrowingRunnable.class.getClassLoader();
-            Executor.class.getClassLoader();
-        } catch (Throwable e) {
-            // ignore
-        }
+        // Burningwave references are isolated in a separate class so that the JVM
+        // class verifier does not resolve them when CompilerModuleOpener is loaded.
+        // This prevents StaticComponentContainer.<clinit> from running on JDK 26+.
+        BurningwaveModuleOpener.open();
     }
 }
