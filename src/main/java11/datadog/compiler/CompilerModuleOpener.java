@@ -1,9 +1,5 @@
 package datadog.compiler;
 
-import java.util.concurrent.Executor;
-import org.burningwave.core.assembler.StaticComponentContainer;
-import org.burningwave.core.function.ThrowingRunnable;
-
 public class CompilerModuleOpener {
 
     /**
@@ -20,15 +16,19 @@ public class CompilerModuleOpener {
      * </ul>
      */
     public static void setup() {
-        try {
-            if (StaticComponentContainer.JVMInfo.getVersion() >= 16) {
-                StaticComponentContainer.Modules.exportToAllUnnamed("jdk.compiler");
-            }
-            // force classes to be loaded: https://github.com/burningwave/core/discussions/15
-            ThrowingRunnable.class.getClassLoader();
-            Executor.class.getClassLoader();
-        } catch (Throwable e) {
-            // ignore
+        // On Java 26+, burningwave's StaticComponentContainer fails to initialize because its
+        // transitive dependency (jvm-driver) uses a Class.forName0 signature that was removed
+        // in JDK 26 (JEP 471/498). The failure prints a noisy stacktrace to stderr even though
+        // the exception is caught. When running with the dd-trace-java agent, module exports are
+        // already handled by CompilerModuleExporter via Instrumentation.redefineModule(), so
+        // burningwave is not needed. For standalone usage, --add-exports flags must be provided
+        // manually (see README).
+        if (Runtime.version().feature() >= 26) {
+            return;
         }
+        // Burningwave references are isolated in a separate class so that the JVM
+        // class verifier does not resolve them when CompilerModuleOpener is loaded.
+        // This prevents StaticComponentContainer.<clinit> from running on JDK 26+.
+        BurningwaveModuleOpener.open();
     }
 }
