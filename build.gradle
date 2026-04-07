@@ -28,7 +28,11 @@ allprojects {
     }
 
     repositories {
-        mavenLocal()
+        mavenLocal {
+            content {
+                includeVersionByRegex(".*", ".*", ".*-SNAPSHOT")
+            }
+        }
         mavenCentral()
         gradlePluginPortal()
     }
