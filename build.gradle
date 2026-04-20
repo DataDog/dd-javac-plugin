@@ -14,6 +14,10 @@ allprojects {
     apply plugin: "maven-publish"
     apply plugin: "signing"
 
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+
     java {
         withJavadocJar()
         withSourcesJar()
@@ -24,7 +28,11 @@ allprojects {
     }
 
     repositories {
-        mavenLocal()
+        mavenLocal {
+            content {
+                includeVersionByRegex(".*", ".*", ".*-SNAPSHOT")
+            }
+        }
         mavenCentral()
         gradlePluginPortal()
     }

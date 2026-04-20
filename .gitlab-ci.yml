@@ -17,6 +17,9 @@ deploy_to_sonatype:
   tags:
     - "docker-in-docker:amd64"
 
+  # TODO: openjdk:8 is deprecated and has been removed from Docker Hub.
+  # This image should be replaced (e.g. with eclipse-temurin:11-jdk)
+  # and pinned to a sha256 digest as part of the release process refactor.
   image: openjdk:8
 
   script:
