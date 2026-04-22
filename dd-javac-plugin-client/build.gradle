@@ -2,7 +2,7 @@ description = "Runtime client that uses data injected by Datadog Java Compiler P
 
 dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter-api:5.9.2"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.9.2"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:6.0.3"
 }
 
 apply from: "$rootDir/gradle/java8-compile.gradle"
