@@ -19,6 +19,20 @@ To build the entire project with tests run:
 ./gradlew clean build
 ```
 
+## Releasing
+
+The release version comes from the Git tag. `version` in `gradle.properties` is only used for local builds.
+
+1. Make sure the `master` commit you want to release has passed CI.
+2. Create a signed tag on that commit and push it. Pushing tags requires bypass permission on the organization tag ruleset.
+   ```bash
+   git tag -s 0.2.5 -m 0.2.5 <commit>
+   git push origin 0.2.5
+   ```
+3. The `Create Release` GitHub workflow creates the GitHub release and attaches the all-in-one JAR.
+4. In the GitLab pipeline for the tag, run the manual `deploy_to_sonatype` job. It builds, signs and uploads the artifacts to the Maven Central staging area.
+5. Publish the deployment in the [Maven Central portal](https://central.sonatype.com/publishing/deployments). The artifacts can take a few hours to appear on Maven Central.
+
 ## Intellij IDEA
 
 In `Project Settings` -> `Modules` ensure that the following modules have JDK 8 set as their module SDK:

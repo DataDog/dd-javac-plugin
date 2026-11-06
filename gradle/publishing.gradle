@@ -1,9 +1,3 @@
-release {
-    git {
-        requireBranch.set('master')
-    }
-}
-
 gradle.taskGraph.whenReady { TaskExecutionGraph taskGraph ->
     if (taskGraph.hasTask("publishToSonatype")) {
         assert System.getenv("SONATYPE_USER") != null

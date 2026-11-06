@@ -3,12 +3,21 @@ name: Create Release
 on:
   push:
     tags:
-      - "*.*.*"
+      - "[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
+      - name: Get GitHub token
+        uses: DataDog/dd-octo-sts-action@96a25462dbcb10ebf0bfd6e2ccc917d2ab235b9a # v1.0.4
+        id: octo-sts
+        with:
+          scope: DataDog/dd-javac-plugin
+          policy: self.github.release
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - name: Setup Java
@@ -23,10 +32,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4.4.3
       - name: Build with Gradle
-        run: ./gradlew shadowJar
+        run: ./gradlew shadowJar -Pversion="${GITHUB_REF_NAME}"
       - name: Release
         uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
         with:
           files: build/libs/*.jar
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_ACCESS_TOKEN }}
+          token: ${{ steps.octo-sts.outputs.token }}
