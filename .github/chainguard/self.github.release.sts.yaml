@@ -1,0 +1,12 @@
+# Policy for: .github/workflows/release.yaml in DataDog/dd-javac-plugin
+issuer: https://token.actions.githubusercontent.com
+subject_pattern: repo:DataDog/dd-javac-plugin:ref:refs/tags/[0-9]+\.[0-9]+\.[0-9]+
+
+claim_pattern:
+  event_name: push
+  job_workflow_ref: DataDog/dd-javac-plugin/\.github/workflows/release\.yaml@refs/tags/[0-9]+\.[0-9]+\.[0-9]+
+  ref: refs/tags/[0-9]+\.[0-9]+\.[0-9]+
+  repository: DataDog/dd-javac-plugin
+
+permissions:
+  contents: write

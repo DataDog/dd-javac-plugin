@@ -3,34 +3,27 @@ stages:
   - create_key
 
 variables:
-  REGISTRY: 486234852809.dkr.ecr.us-east-1.amazonaws.com
+  BUILD_IMAGE: registry.ddbuild.io/images/mirror/dd-trace-java-docker-build:ci-base@sha256:ae1389655765aeb918ec53ea5864b6d4ca1692699aa398a1a62d0d6e5dfb762c
+  GPG_IMAGE: registry.ddbuild.io/ci/agent-key-management-tools/gpg:1@sha256:a6033e3c52feb3198285732be55068afd87583385f94aafe927c5d1f6c4ddb37
 
 # From the tagged repo, push the release artifact
 deploy_to_sonatype:
   stage: deploy_to_sonatype
 
   rules:
-    # All releases are manual
-    - when: manual
+    - if: '$CI_COMMIT_TAG =~ /^[0-9]+\.[0-9]+\.[0-9]+$/'
+      when: manual
       allow_failure: true
 
   tags:
     - "docker-in-docker:amd64"
 
-  # TODO: openjdk:8 is deprecated and has been removed from Docker Hub.
-  # This image should be replaced (e.g. with eclipse-temurin:11-jdk)
-  # and pinned to a sha256 digest as part of the release process refactor.
-  image: openjdk:8
+  image: $BUILD_IMAGE
 
   script:
     # Ensure we don't print commands being run to the logs during credential
     # operations
     - set +x
-
-    - echo "Installing AWSCLI..."
-    - apt update
-    - apt install -y openjdk-11-jdk python3 python3-pip
-    - python3 -m pip install awscli
 
     - echo "Fetching Sonatype user..."
     - export SONATYPE_USER=$(aws ssm get-parameter --region us-east-1 --name ci.dd-javac-plugin.central_username --with-decryption --query "Parameter.Value" --out text)
@@ -45,7 +38,7 @@ deploy_to_sonatype:
     - set -x
 
     - echo "Building release..."
-    - ./gradlew build publishToSonatype closeSonatypeStagingRepository --max-workers=1 --build-cache --stacktrace --no-daemon
+    - ./gradlew build publishToSonatype closeSonatypeStagingRepository -Pversion="$CI_COMMIT_TAG" -Porg.gradle.java.installations.fromEnv=JAVA_8_HOME,JAVA_11_HOME --max-workers=1 --build-cache --stacktrace --no-daemon
 
   artifacts:
     expire_in: 12 mos
@@ -70,7 +63,7 @@ create_key:
   variables:
     PROJECT_NAME: "dd-javac-plugin"
     EXPORT_TO_KEYSERVER: "true"
-  image: $REGISTRY/ci/agent-key-management-tools/gpg:1
+  image: $GPG_IMAGE
   script:
     - mkdir pubkeys
     - /create.sh
