@@ -3,9 +3,11 @@ package datadog.compiler;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import datadog.compiler.annotations.SourceLines;
 import datadog.compiler.utils.CompilerUtils;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
@@ -130,6 +132,25 @@ public class DatadogCompilerPluginTest {
                 Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "lambda$lambdaMethod$0", new Class[0], CompilerUtils.LINE_UNKNOWN, CompilerUtils.LINE_UNKNOWN), // lines unknown since lambda method is private
                 Arguments.of("datadog/compiler/Test.java", "datadog.compiler.Test", "commentedMethod", new Class[0], 58, 60) // we cannot establish correspondence between the method and the comment, so only actual method lines are considered here
         );
+    }
+
+    @Test
+    public void testMethodLinesAnnotationIsAppended() throws Exception {
+        String resourceName = "datadog/compiler/Test.java";
+
+        String classSource;
+        try (InputStream classStream = ClassLoader.getSystemResourceAsStream(resourceName)) {
+            classSource = IOUtils.toString(classStream, Charset.defaultCharset());
+        }
+
+        String compiledClassName = resourceName.substring(0, resourceName.lastIndexOf('.')).replace('/', '.');
+        try (InMemoryFileManager fileManager = compile(compiledClassName, classSource)) {
+            Class<?> clazz = fileManager.loadCompiledClass(compiledClassName);
+            Annotation[] annotations = clazz.getDeclaredMethod("annotatedMethod").getAnnotations();
+            Assertions.assertEquals(2, annotations.length);
+            Assertions.assertEquals(Deprecated.class, annotations[0].annotationType());
+            Assertions.assertEquals(SourceLines.class, annotations[1].annotationType());
+        }
     }
 
     @Test

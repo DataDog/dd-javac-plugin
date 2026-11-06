@@ -118,7 +118,7 @@ public class AnnotationsInjectingClassVisitor extends TreeScanner<Void, Void> {
                 }
 
                 JCTree.JCAnnotation sourceLinesAnnotation = sourceLinesAnnotation(startPosition, endPosition);
-                methodDecl.mods.annotations = methodDecl.mods.annotations.prepend(sourceLinesAnnotation);
+                methodDecl.mods.annotations = methodDecl.mods.annotations.append(sourceLinesAnnotation);
             }
         }
         return super.visitMethod(node, aVoid);
